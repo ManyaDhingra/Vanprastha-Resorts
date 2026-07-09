@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  phone     String?
+  role      UserRole @default(USER)
+
+  bookings  Booking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Room {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  title          String
+  category       String
+  description    String
+  capacity       Int
+  size           Int
+  pricePerNight  Int
+  image          String
+
+  bookings       Booking[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("rooms")
+}
+
+model Booking {
+  id          String         @id @default(cuid())
+
+  userId      String
+  roomId      String
+
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room        Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  checkIn     DateTime
+  checkOut    DateTime
+
+  guests      Int
+  totalAmount Int
+
+  status      BookingStatus  @default(PENDING)
+
+  payment     Payment?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("bookings")
+}
+
+model Payment {
+  id                 String        @id @default(cuid())
+
+  bookingId          String        @unique
+  booking            Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  razorpayOrderId    String?
+  razorpayPaymentId  String?
+  razorpaySignature  String?
+
+  amount             Int
+  status             PaymentStatus @default(PENDING)
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("payments")
+}
