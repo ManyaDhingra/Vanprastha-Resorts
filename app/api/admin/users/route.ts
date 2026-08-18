@@ -1,7 +1,41 @@
-import { NextResponse } from 'next/server'
-import { users } from '@/data/users'
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { verifyAdmin } from "@/lib/admin";
 
-export async function GET() {
-  const safe = users.map((u) => ({ id: u.id, name: u.name, email: u.email }))
-  return NextResponse.json(safe)
+export async function GET(request: NextRequest) {
+  try {
+
+    verifyAdmin(request);
+
+    const users = await prisma.user.findMany({
+
+      orderBy: {
+        createdAt: "desc",
+      },
+
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        createdAt: true,
+      },
+
+    });
+
+    return NextResponse.json(users);
+
+  } catch (error) {
+
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      },
+      {
+        status: 500,
+      }
+    );
+
+  }
 }

@@ -2,7 +2,12 @@
 
 import * as React from 'react'
 
-type User = { id: string; name: string; email: string }
+export interface User {
+  id: string
+  name: string
+  email: string
+  role: 'USER' | 'ADMIN'
+}
 
 type AuthContextValue = {
   user: User | null
@@ -25,32 +30,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const u = localStorage.getItem('vp_user')
     if (t && u) {
       setToken(t)
-      try { setUser(JSON.parse(u)) } catch { setUser(null) }
+      try {
+        setUser(JSON.parse(u) as User)
+      } catch {
+        setUser(null)
+        setToken(null)
+        localStorage.removeItem('vp_token')
+        localStorage.removeItem('vp_user')
+      }
     }
     setLoading(false)
   }, [])
 
   async function login(email: string, password: string) {
-    const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) })
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
     if (!res.ok) throw new Error('Invalid credentials')
     const data = await res.json()
-    setUser({ id: data.id, name: data.name, email: data.email })
+    const authenticatedUser: User = {
+      id: data.user.id,
+      name: data.user.name,
+      email: data.user.email,
+      role: data.user.role,
+    }
+    setUser(authenticatedUser)
     setToken(data.token)
     localStorage.setItem('vp_token', data.token)
-    localStorage.setItem('vp_user', JSON.stringify({ id: data.id, name: data.name, email: data.email }))
+    localStorage.setItem('vp_user', JSON.stringify(authenticatedUser))
   }
 
   async function register(name: string, email: string, password: string) {
-    const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password }) })
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    })
     if (!res.ok) {
       const err = await res.json()
       throw new Error(err?.error || 'Registration failed')
     }
     const data = await res.json()
-    setUser({ id: data.id, name: data.name, email: data.email })
+    const authenticatedUser: User = {
+      id: data.user.id,
+      name: data.user.name,
+      email: data.user.email,
+      role: data.user.role,
+    }
+    setUser(authenticatedUser)
     setToken(data.token)
     localStorage.setItem('vp_token', data.token)
-    localStorage.setItem('vp_user', JSON.stringify({ id: data.id, name: data.name, email: data.email }))
+    localStorage.setItem('vp_user', JSON.stringify(authenticatedUser))
   }
 
   function logout() {
@@ -60,7 +92,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('vp_user')
   }
 
-  const value = React.useMemo(() => ({ user, token, loading, login, register, logout }), [user, token, loading])
+  const value = React.useMemo(
+    () => ({ user, token, loading, login, register, logout }),
+    [user, token, loading]
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
