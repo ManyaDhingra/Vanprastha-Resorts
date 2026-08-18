@@ -31,7 +31,10 @@ export function RoomsFilters({ types, onChange }: Props) {
   }, [priceMin, priceMax, guests, type, onChange])
 
   return (
-    <form className="grid gap-3 sm:grid-cols-4">
+    <form
+      className="grid gap-3 sm:grid-cols-4"
+      onSubmit={(e) => e.preventDefault()}
+    >
       <div>
         <label className="mb-1 block text-xs font-medium text-slate-600">Min price (₹)</label>
         <input value={priceMin} onChange={(e) => setPriceMin(e.target.value)} className="w-full rounded-md border border-slate-200 px-3 py-2" inputMode="numeric" />

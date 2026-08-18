@@ -407,7 +407,7 @@ export function BookingFlow() {
             <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
             <Button
               onClick={() => setStep(4)}
-              disabled={availability === 'unavailable'}
+              disabled={availability !== 'available'}
             >
               Proceed to payment
             </Button>

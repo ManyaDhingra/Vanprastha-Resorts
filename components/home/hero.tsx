@@ -1,6 +1,7 @@
 "use client"
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 
@@ -39,9 +40,11 @@ export function Hero() {
             </p>
 
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 transform -translate-y-8">
-              <Button className="shadow-soft h-12">Reserve a stay</Button>
+              <Button asChild className="shadow-soft h-12">
+                <Link href="/book">Reserve a stay</Link>
+              </Button>
               <Button variant="outline" asChild className="h-12">
-                <a href="#experience">Explore retreats</a>
+                <Link href="/rooms">Explore retreats</Link>
               </Button>
             </div>
           </div>

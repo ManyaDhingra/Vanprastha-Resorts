@@ -2,29 +2,51 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/auth/auth-provider'
 import { Button } from '@/components/ui/button'
 
 export default function LoginPage() {
+  // useSearchParams opts into CSR bailout during static prerender: it must
+  // sit inside a Suspense boundary.
+  return (
+    <React.Suspense fallback={null}>
+      <LoginForm />
+    </React.Suspense>
+  )
+}
+
+function LoginForm() {
   const { login, user, loading: authLoading } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  // ?next= lets the booking flow return the user here after login instead of
+  // dropping them at the homepage. Only same-site paths are honored.
+  const nextParam = searchParams.get('next')
+  const next =
+    typeof nextParam === 'string' &&
+    nextParam.startsWith('/') &&
+    !nextParam.startsWith('//')
+      ? nextParam
+      : null
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [error, setError] = React.useState<string | null>(null)
   const [submitting, setSubmitting] = React.useState(false)
 
   React.useEffect(() => {
-    if (!authLoading && user) router.replace('/')
-  }, [authLoading, user, router])
+    if (!authLoading && user) router.replace(next ?? '/')
+  }, [authLoading, user, router, next])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setSubmitting(true)
     try {
-      await login(email, password)
-      router.replace(user?.role === 'ADMIN' ? '/admin' : '/')
+      // login() resolves with the fresh user — the same-render closure above
+      // is stale, so never read `user` for the redirect target.
+      const loggedIn = await login(email, password)
+      router.replace(next ?? (loggedIn.role === 'ADMIN' ? '/admin' : '/'))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {

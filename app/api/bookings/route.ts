@@ -100,6 +100,7 @@ export async function GET(request: NextRequest) {
     const bookings = await prisma.booking.findMany({
       where: { userId: decoded.userId },
       orderBy: { createdAt: "desc" },
+      take: 100, // bounded: a user's own history, not an unbounded drain
       include: {
         room: { select: { id: true, title: true, slug: true, image: true } },
         payment: { select: { status: true, amount: true } },

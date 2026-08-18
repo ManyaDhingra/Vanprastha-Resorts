@@ -42,14 +42,16 @@ async function getStats() {
   );
 
   // Monthly revenue (last 6 months) via SQL date_trunc — groupBy cannot
-  // truncate dates.
+  // truncate dates. Bucketed in the resort's timezone (Asia/Kolkata) so a
+  // late-night payment is attributed to the guest's calendar month, not the
+  // server's UTC month.
   const monthlyRows = await prisma.$queryRaw<
     Array<{ month: Date; total: bigint }>
   >`
-    SELECT date_trunc('month', "createdAt") AS month, SUM(amount) AS total
+    SELECT date_trunc('month', "createdAt" AT TIME ZONE 'Asia/Kolkata') AS month, SUM(amount) AS total
     FROM payments
     WHERE status = 'SUCCESS'
-    GROUP BY date_trunc('month', "createdAt")
+    GROUP BY date_trunc('month', "createdAt" AT TIME ZONE 'Asia/Kolkata')
     ORDER BY month DESC
     LIMIT 6
   `;

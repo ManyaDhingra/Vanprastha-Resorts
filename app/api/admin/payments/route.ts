@@ -8,8 +8,14 @@ export async function GET(request: NextRequest) {
   try {
     await verifyAdmin(request);
 
+    // Bounded: the list must not grow into a full-table memory load.
+    const page = Math.max(1, Number(request.nextUrl.searchParams.get("page")) || 1);
+    const limit = Math.min(50, Math.max(1, Number(request.nextUrl.searchParams.get("limit")) || 20));
+
     const payments = await prisma.payment.findMany({
       orderBy: { createdAt: "desc" },
+      skip: (page - 1) * limit,
+      take: limit,
       include: {
         booking: {
           select: {

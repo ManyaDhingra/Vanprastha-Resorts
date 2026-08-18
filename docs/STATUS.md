@@ -1,6 +1,6 @@
 # Project Status
 
-_Updated 2026-08-19._ Companion to `ARCHITECTURE.md` (how it works) and `AUDIT.md` (the original 3-phase remediation report).
+_Updated 2026-08-19 (deep-audit pass)._ Companion to `ARCHITECTURE.md` (how it works), `AUDIT.md` (original 3-phase remediation) and `AUDIT-2026-08-19.md` (7-auditor deep-dive: money-path races, sweep safety, auth hardening).
 
 ## What is done
 
@@ -19,10 +19,11 @@ _Updated 2026-08-19._ Companion to `ARCHITECTURE.md` (how it works) and `AUDIT.m
 - Marketing content (`data/*`) stays static by design — editorial, not transactional.
 
 ### P2 — quality & tooling
-- Vitest: 32 unit/integration tests (booking math, auth, room schema, real-PG constraint incl. checkout-day reuse boundary).
-- E2E suite `scripts/verify-api.ps1` (reads admin credentials from env — no hardcoded defaults).
-- `db:setup` (psql + migrate + seed), lint clean, `tsc --noEmit` clean, production build green.
-- `.env.example` committed; `package-lock.json` tracked.
+- Vitest: 54 tests — 50 unit + 4 real-PG integration (booking math, auth, room schema, constraint incl. checkout-day reuse, **expiry sweep semantics**, errors mapping, rate-limit boundary + IP derivation, **payment-verify guard** incl. race rollback).
+- E2E suite `scripts/verify-api.ps1` (reads admin credentials from env — no hardcoded defaults; all assertions real, no vacuous checks).
+- `db:setup` (psql + migrate + seed), lint clean, `tsc --noEmit` clean, production build green (`output: "standalone"`).
+- CI workflow (`.github/workflows/ci.yml`): lint → typecheck → migrate → seed → tests → build → e2e on push/PR.
+- `.env.example` committed; `package-lock.json` tracked; duplicate deps removed (react-hook-form).
 
 ### Docs & maps
 - **`/docs`** — interactive system map (animated data-flow; every dot = inspectable payload).
@@ -64,12 +65,13 @@ Known, accepted debt (no live hole, documented): CSP keeps `'unsafe-inline'` bec
 - **Monitoring**: uptime check, Postgres backups, error alerting.
 - Consider a **CMS** for marketing content if the resort team wants to edit offers/gallery without code changes (currently `data/*` is editorial code).
 
-## Verification status (2026-08-19)
+## Verification status (2026-08-19 deep audit)
 
-- [x] Unit + integration tests (incl. real-PG constraint) — 32 passing
+- [x] Unit + integration tests — 54 passing (50 unit incl. payment-guard race suite + 4 real-PG)
 - [x] Lint + `tsc --noEmit` clean
-- [x] Production build green (full route table mid-review; re-verified post-fixes)
-- [x] E2E API suite — all checks pass against the running server
-- [x] Admin credential rotation verified live (new works, old 401)
-- [x] Middleware → layout admin gate verified (cookie present + valid admin JWT reaches dashboard)
+- [x] Production build green (`next build`, standalone output)
+- [x] E2E API suite — all checks pass incl. real 307+/login assert (22 checks)
+- [x] CSP + security headers verified on public pages (was homepage gap)
 - [x] C3 boundary: adjacent-day booking succeeds, overlap rejected (integration test)
+- [x] Expiry sweep real-PG: stale swept / live-order spared / binding-nulled swept
+- [x] Admin credential rotation verified live (new works, old 401)

@@ -12,15 +12,19 @@ export default function RegisterPage() {
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [error, setError] = React.useState<string | null>(null)
+  const [submitting, setSubmitting] = React.useState(false)
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setSubmitting(true)
     try {
       await register(name, email, password)
       router.push('/')
     } catch (err: any) {
       setError(err.message)
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -41,7 +45,9 @@ export default function RegisterPage() {
           {error && <div className="text-sm text-red-600">{error}</div>}
 
           <div className="flex justify-end">
-            <Button type="submit">Create account</Button>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? 'Creating account…' : 'Create account'}
+            </Button>
           </div>
         </form>
       </div>

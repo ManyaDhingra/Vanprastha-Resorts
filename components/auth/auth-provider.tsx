@@ -14,7 +14,7 @@ type AuthContextValue = {
   user: User | null
   token: string | null
   loading: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<User>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => Promise<void>
 }
@@ -58,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(data.user)
     setToken(data.token)
     storeSession(data.token, data.user)
+    return data.user
   }
 
   async function login(email: string, password: string) {
@@ -70,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const body = await res.json().catch(() => null)
       throw new Error(body?.error || 'Invalid credentials')
     }
-    await applyAuth(await res.json())
+    return applyAuth(await res.json())
   }
 
   async function register(name: string, email: string, password: string) {
