@@ -1,4 +1,4 @@
-import type { Testimonial } from '@/types/api'
+import type { Testimonial } from '@/lib/shared/content-types'
 
 export const testimonials: Testimonial[] = [
   {

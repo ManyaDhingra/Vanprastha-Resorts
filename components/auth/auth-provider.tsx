@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from 'react'
+import { apiFetch, clearStoredSession, storeSession } from '@/lib/utils'
 
 export interface User {
   id: string
@@ -15,7 +16,7 @@ type AuthContextValue = {
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(undefined)
@@ -25,22 +26,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(true)
 
+  // Restore the session from storage, then validate it against the server.
+  // A stored but expired/forged token is rejected and cleared.
   React.useEffect(() => {
+    let mounted = true
     const t = localStorage.getItem('vp_token')
-    const u = localStorage.getItem('vp_user')
-    if (t && u) {
-      setToken(t)
-      try {
-        setUser(JSON.parse(u) as User)
-      } catch {
+    if (!t) {
+      setLoading(false)
+      return
+    }
+    setToken(t)
+
+    apiFetch<{ user: User }>('/api/auth/me')
+      .then((data) => {
+        if (!mounted) return
+        setUser(data.user)
+        storeSession(t, data.user)
+      })
+      .catch(() => {
+        if (!mounted) return
         setUser(null)
         setToken(null)
-        localStorage.removeItem('vp_token')
-        localStorage.removeItem('vp_user')
-      }
-    }
-    setLoading(false)
+        clearStoredSession()
+      })
+      .finally(() => mounted && setLoading(false))
+
+    return () => { mounted = false }
   }, [])
+
+  async function applyAuth(data: { token: string; user: User }) {
+    setUser(data.user)
+    setToken(data.token)
+    storeSession(data.token, data.user)
+  }
 
   async function login(email: string, password: string) {
     const res = await fetch('/api/auth/login', {
@@ -48,18 +66,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     })
-    if (!res.ok) throw new Error('Invalid credentials')
-    const data = await res.json()
-    const authenticatedUser: User = {
-      id: data.user.id,
-      name: data.user.name,
-      email: data.user.email,
-      role: data.user.role,
+    if (!res.ok) {
+      const body = await res.json().catch(() => null)
+      throw new Error(body?.error || 'Invalid credentials')
     }
-    setUser(authenticatedUser)
-    setToken(data.token)
-    localStorage.setItem('vp_token', data.token)
-    localStorage.setItem('vp_user', JSON.stringify(authenticatedUser))
+    await applyAuth(await res.json())
   }
 
   async function register(name: string, email: string, password: string) {
@@ -69,32 +80,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       body: JSON.stringify({ name, email, password }),
     })
     if (!res.ok) {
-      const err = await res.json()
-      throw new Error(err?.error || 'Registration failed')
+      const body = await res.json().catch(() => null)
+      throw new Error(body?.error || 'Registration failed')
     }
-    const data = await res.json()
-    const authenticatedUser: User = {
-      id: data.user.id,
-      name: data.user.name,
-      email: data.user.email,
-      role: data.user.role,
-    }
-    setUser(authenticatedUser)
-    setToken(data.token)
-    localStorage.setItem('vp_token', data.token)
-    localStorage.setItem('vp_user', JSON.stringify(authenticatedUser))
+    await applyAuth(await res.json())
   }
 
-  function logout() {
+  const loginCb = React.useCallback(login, [])
+  const registerCb = React.useCallback(register, [])
+
+  async function logout() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch {
+      // cookie may be cleared even if the fetch fails; clear locally anyway
+    }
     setUser(null)
     setToken(null)
-    localStorage.removeItem('vp_token')
-    localStorage.removeItem('vp_user')
+    clearStoredSession()
   }
+  const logoutCb = React.useCallback(logout, [])
 
   const value = React.useMemo(
-    () => ({ user, token, loading, login, register, logout }),
-    [user, token, loading]
+    () => ({ user, token, loading, login: loginCb, register: registerCb, logout: logoutCb }),
+    [user, token, loading, loginCb, registerCb, logoutCb]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

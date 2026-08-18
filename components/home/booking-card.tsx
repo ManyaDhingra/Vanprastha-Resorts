@@ -1,10 +1,34 @@
 "use client"
 
 import * as React from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 
+function todayISO() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+/**
+ * Hero availability card: submits dates/guests to the booking flow, which
+ * validates availability and takes over from there. No fake "available"
+ * responses are ever shown here.
+ */
 export function BookingCard() {
+  const router = useRouter()
+  const [checkIn, setCheckIn] = React.useState('')
+  const [checkOut, setCheckOut] = React.useState('')
+  const [guests, setGuests] = React.useState('2')
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const params = new URLSearchParams()
+    if (checkIn) params.set('checkIn', checkIn)
+    if (checkOut) params.set('checkOut', checkOut)
+    if (guests) params.set('guests', guests)
+    router.push(`/book?${params.toString()}`)
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -12,22 +36,45 @@ export function BookingCard() {
       transition={{ duration: 0.6 }}
       className="mx-auto w-full max-w-[1100px] rounded-[32px] bg-white/95 px-7 py-7 shadow-2xl"
     >
-      <form className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-        <label className="sr-only">Check in</label>
-        <input type="date" aria-label="Check in" className="rounded-md border border-slate-200 px-3 py-2" />
+      <form onSubmit={submit} className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+        <label className="sr-only" htmlFor="bc-checkin">Check in</label>
+        <input
+          id="bc-checkin"
+          type="date"
+          min={todayISO()}
+          value={checkIn}
+          onChange={(e) => setCheckIn(e.target.value)}
+          aria-label="Check in"
+          className="rounded-md border border-slate-200 px-3 py-2"
+        />
 
-        <label className="sr-only">Check out</label>
-        <input type="date" aria-label="Check out" className="rounded-md border border-slate-200 px-3 py-2" />
+        <label className="sr-only" htmlFor="bc-checkout">Check out</label>
+        <input
+          id="bc-checkout"
+          type="date"
+          min={checkIn || todayISO()}
+          value={checkOut}
+          onChange={(e) => setCheckOut(e.target.value)}
+          aria-label="Check out"
+          className="rounded-md border border-slate-200 px-3 py-2"
+        />
 
-        <label className="sr-only">Guests</label>
-        <select aria-label="Guests" className="rounded-md border border-slate-200 px-3 py-2">
-          <option>2 guests</option>
-          <option>3 guests</option>
-          <option>4 guests</option>
+        <label className="sr-only" htmlFor="bc-guests">Guests</label>
+        <select
+          id="bc-guests"
+          aria-label="Guests"
+          value={guests}
+          onChange={(e) => setGuests(e.target.value)}
+          className="rounded-md border border-slate-200 px-3 py-2"
+        >
+          <option value="1">1 guest</option>
+          <option value="2">2 guests</option>
+          <option value="3">3 guests</option>
+          <option value="4">4 guests</option>
         </select>
 
         <div className="flex items-center">
-          <Button className="w-full">Check availability</Button>
+          <Button type="submit" className="w-full">Check availability</Button>
         </div>
       </form>
     </motion.div>

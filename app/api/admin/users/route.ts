@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { verifyAdmin } from "@/lib/admin";
+import { prisma } from "@/lib/server/prisma";
+import { verifyAdmin } from "@/lib/server/admin";
+import { handleApiError } from "@/lib/server/errors";
 
 export async function GET(request: NextRequest) {
   try {
-
-    verifyAdmin(request);
+    await verifyAdmin(request);
 
     const users = await prisma.user.findMany({
-
-      orderBy: {
-        createdAt: "desc",
-      },
-
+      orderBy: { createdAt: "desc" },
       select: {
         id: true,
         name: true,
@@ -20,22 +16,12 @@ export async function GET(request: NextRequest) {
         phone: true,
         role: true,
         createdAt: true,
+        _count: { select: { bookings: true } },
       },
-
     });
 
     return NextResponse.json(users);
-
   } catch (error) {
-
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal Server Error",
-      },
-      {
-        status: 500,
-      }
-    );
-
+    return handleApiError(error);
   }
 }

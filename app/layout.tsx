@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     siteName: 'Vanprastha Resorts'
   },
   icons: {
-    icon: '/favicon.ico'
+    icon: '/favicon.svg'
   }
 }
 

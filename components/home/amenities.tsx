@@ -1,6 +1,6 @@
 "use client"
 
-import type { Amenity } from '@/types/api'
+import type { Amenity } from '@/lib/shared/content-types'
 
 interface Props { amenities: Amenity[] }
 

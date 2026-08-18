@@ -1,57 +1,68 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { razorpay } from "@/lib/razorpay";
-import { verifyToken } from "@/lib/auth";
+import { prisma } from "@/lib/server/prisma";
+import { getRazorpay } from "@/lib/server/razorpay";
+import { getAuthToken, verifyToken } from "@/lib/server/auth";
+import { HttpError, handleApiError } from "@/lib/server/errors";
 
+/**
+ * POST /api/payment/create-order — create a Razorpay order for a booking.
+ * Persists razorpayOrderId on the Payment row so verification can be bound to
+ * the booking server-side (the client can never point a paid order at a
+ * different, more expensive booking).
+ */
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("authorization");
+    const decoded = verifyToken(getAuthToken(request));
 
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+    const body = await request.json();
+    const { bookingId } = body ?? {};
+
+    if (typeof bookingId !== "string" || !bookingId) {
+      throw new HttpError(400, "bookingId is required.");
     }
 
-    const token = authHeader.split(" ")[1];
-
-    const decoded = verifyToken(token);
-
-    const { bookingId } = await request.json();
-
     const booking = await prisma.booking.findUnique({
-      where: {
-        id: bookingId,
-      },
+      where: { id: bookingId },
+      include: { payment: true },
     });
 
     if (!booking) {
-      return NextResponse.json(
-        {
-          error: "Booking not found",
-        },
-        {
-          status: 404,
-        }
+      throw new HttpError(404, "Booking not found.");
+    }
+    if (booking.userId !== decoded.userId) {
+      throw new HttpError(403, "You can only pay for your own bookings.");
+    }
+    if (booking.status !== "PENDING") {
+      throw new HttpError(
+        409,
+        booking.status === "CONFIRMED"
+          ? "Booking is already paid."
+          : "Booking is cancelled."
       );
     }
 
-    if (booking.userId !== decoded.userId) {
-      return NextResponse.json(
-        {
-          error: "Unauthorized",
-        },
-        {
-          status: 403,
-        }
-      );
-    }
+    const razorpay = getRazorpay();
 
     const order = await razorpay.orders.create({
-      amount: booking.totalAmount * 100,
+      amount: booking.totalAmount * 100, // paise
       currency: "INR",
       receipt: booking.id,
+    });
+
+    // Bind the order to the booking before any payment attempt.
+    await prisma.payment.upsert({
+      where: { bookingId: booking.id },
+      create: {
+        bookingId: booking.id,
+        amount: booking.totalAmount,
+        status: "PENDING",
+        razorpayOrderId: order.id,
+      },
+      update: {
+        razorpayOrderId: order.id,
+        amount: booking.totalAmount,
+        status: "PENDING",
+      },
     });
 
     return NextResponse.json({
@@ -61,15 +72,6 @@ export async function POST(request: NextRequest) {
       bookingId: booking.id,
     });
   } catch (error) {
-    console.error(error);
-
-    return NextResponse.json(
-      {
-        error: "Internal Server Error",
-      },
-      {
-        status: 500,
-      }
-    );
+    return handleApiError(error);
   }
 }

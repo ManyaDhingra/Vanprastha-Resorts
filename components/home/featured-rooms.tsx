@@ -3,10 +3,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import type { Room } from '@/types/api'
+import type { RoomDto } from '@/lib/shared/types'
+import { formatINR } from '@/lib/utils'
 
 interface Props {
-  rooms: Room[]
+  rooms: RoomDto[]
 }
 
 export function FeaturedRooms({ rooms }: Props) {
@@ -29,13 +30,15 @@ export function FeaturedRooms({ rooms }: Props) {
               </div>
               <div className="p-4">
                 <h3 className="text-lg font-semibold text-slate-950">{room.title}</h3>
-                <p className="mt-2 text-sm text-slate-600">{room.description}</p>
+                <p className="mt-2 line-clamp-2 text-sm text-slate-600">{room.description}</p>
                 <div className="mt-4 flex items-center justify-between text-sm text-slate-700">
-                  <span>{room.size}</span>
-                  <span className="font-semibold">{room.pricePerNight}</span>
+                  <span>{room.size} sq ft • up to {room.capacity} guests</span>
+                  <span className="font-semibold">{formatINR(room.pricePerNight)}
+                    <span className="ml-1 text-xs font-normal text-slate-400">/night</span>
+                  </span>
                 </div>
                 <div className="mt-4">
-                  <Link href={`/rooms/${room.id}`} className="text-sm font-medium text-primary">View details</Link>
+                  <Link href={`/rooms/${room.slug}`} className="text-sm font-medium text-primary">View details</Link>
                 </div>
               </div>
             </motion.article>

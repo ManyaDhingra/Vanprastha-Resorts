@@ -1,168 +1,100 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { verifyToken } from "@/lib/auth";
+import { prisma } from "@/lib/server/prisma";
+import { verifyToken, getAuthToken } from "@/lib/server/auth";
+import {
+  parseBookingDates,
+  calculateNights,
+  overlapWhere,
+  validateGuests,
+} from "@/lib/server/booking";
+import { HttpError, handleApiError } from "@/lib/server/errors";
+import { rateLimit } from "@/lib/server/rate-limit";
+import { expireStalePendingBookings } from "@/lib/server/expiry";
 
+/**
+ * POST /api/bookings — create a booking (authenticated).
+ * Server recomputes totalAmount from the room's price; the client never
+ * supplies money amounts. The DB exclusion constraint (bookings_no_overlap)
+ * is the backstop against the concurrent double-booking race.
+ */
 export async function POST(request: NextRequest) {
   try {
+    const decoded = verifyToken(getAuthToken(request));
 
-    // Get JWT from Authorization header
-    const authHeader = request.headers.get("authorization");
+    // Inventory-hold guard: free slots held by abandoned PENDING bookings.
+    await expireStalePendingBookings();
 
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+    // Per-user creation throttle (in-memory; see rate-limit.ts).
+    const gate = rateLimit(`book:${decoded.userId}`, 20, 10 * 60 * 1000);
+    if (!gate.allowed) {
+      throw new HttpError(429, "Too many booking attempts. Please slow down.");
     }
-
-    const token = authHeader.split(" ")[1];
-
-    const decoded = verifyToken(token);
 
     const body = await request.json();
+    const { roomId, checkIn, checkOut, guests } = body ?? {};
 
-    const {
-      roomId,
-      checkIn,
-      checkOut,
-      guests
-    } = body;
-
-    if (!roomId || !checkIn || !checkOut || !guests) {
-      return NextResponse.json(
-        { error: "Missing fields" },
-        { status: 400 }
-      );
+    if (typeof roomId !== "string" || !roomId) {
+      throw new HttpError(400, "roomId is required.");
     }
 
-    // Check room exists
-    const room = await prisma.room.findUnique({
-      where: {
-        id: roomId,
-      },
-    });
-
-    if (!room) {
-      return NextResponse.json(
-        { error: "Room not found" },
-        { status: 404 }
-      );
-    }
-
-    // Calculate number of nights
-    const nights = Math.ceil(
-      (new Date(checkOut).getTime() -
-        new Date(checkIn).getTime()) /
-      (1000 * 60 * 60 * 24)
+    const { checkIn: inDate, checkOut: outDate } = parseBookingDates(
+      String(checkIn ?? ""),
+      String(checkOut ?? "")
     );
 
+    const room = await prisma.room.findUnique({ where: { id: roomId } });
+    if (!room || !room.isActive) {
+      throw new HttpError(404, "Room not found.");
+    }
+
+    validateGuests(guests, room.capacity);
+
+    const nights = calculateNights(inDate, outDate);
     const totalAmount = nights * room.pricePerNight;
-    // Check that checkout is after check-in
-if (new Date(checkOut) <= new Date(checkIn)) {
-  return NextResponse.json(
-    { error: "Check-out date must be after check-in date." },
-    { status: 400 }
-  );
-}
 
-// Check guest capacity
-if (guests > room.capacity) {
-  return NextResponse.json(
-    {
-      error: `This room allows a maximum of ${room.capacity} guests.`,
-    },
-    { status: 400 }
-  );
-}
-    // Check if the room is available for the given dates
-    const existingBooking = await prisma.booking.findFirst({
-  where: {
-    roomId: roomId,
-
-    // Ignore cancelled bookings
-    status: {
-      not: "CANCELLED",
-    },
-
-    // Check for overlapping dates
-    AND: [
-      {
-        checkIn: {
-          lt: new Date(checkOut),
-        },
-      },
-      {
-        checkOut: {
-          gt: new Date(checkIn),
-        },
-      },
-    ],
-  },
-});
-if (existingBooking) {
-  return NextResponse.json(
-    {
-      error: "Room is already booked for the selected dates.",
-    },
-    {
-      status: 409,
+    const existing = await prisma.booking.findFirst({
+      where: overlapWhere(roomId, inDate, outDate),
+    });
+    if (existing) {
+      throw new HttpError(409, "Room is already booked for the selected dates.");
     }
-  );
-}
-    // Create booking
+
     const booking = await prisma.booking.create({
-
       data: {
-
         userId: decoded.userId,
-
         roomId,
-
-        checkIn: new Date(checkIn),
-
-        checkOut: new Date(checkOut),
-
-        guests,
-
+        checkIn: inDate,
+        checkOut: outDate,
+        guests: guests as number,
         totalAmount,
-
       },
-
     });
 
-    return NextResponse.json(booking, {
-      status: 201,
-    });
-
+    return NextResponse.json(booking, { status: 201 });
   } catch (error) {
-
-    console.error(error);
-
-    return NextResponse.json(
-      {
-        error: "Internal Server Error",
-      },
-      {
-        status: 500,
-      }
-    );
+    return handleApiError(error);
   }
 }
 
-export async function GET() {
-  const bookings = await prisma.booking.findMany({
-    include: {
-      room: true,
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-      payment: true,
-    },
-  });
+/**
+ * GET /api/bookings — the caller's own bookings only.
+ * Admin reads go through /api/admin/bookings.
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const decoded = verifyToken(getAuthToken(request));
 
-  return NextResponse.json(bookings);
+    const bookings = await prisma.booking.findMany({
+      where: { userId: decoded.userId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        room: { select: { id: true, title: true, slug: true, image: true } },
+        payment: { select: { status: true, amount: true } },
+      },
+    });
+
+    return NextResponse.json(bookings);
+  } catch (error) {
+    return handleApiError(error);
+  }
 }

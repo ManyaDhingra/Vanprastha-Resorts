@@ -1,7 +1,7 @@
 "use client"
 
 import Image from 'next/image'
-import type { Experience } from '@/types/api'
+import type { Experience } from '@/lib/shared/content-types'
 import { Container } from '@/components/ui/container'
 
 interface Props { experiences: Experience[] }

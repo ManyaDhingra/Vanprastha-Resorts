@@ -1,6 +1,6 @@
 "use client"
 
-import type { Testimonial } from '@/types/api'
+import type { Testimonial } from '@/lib/shared/content-types'
 
 interface Props { testimonials: Testimonial[] }
 

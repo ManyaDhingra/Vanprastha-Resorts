@@ -1,34 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { verifyAdmin } from "@/lib/admin";
+import { prisma } from "@/lib/server/prisma";
+import { verifyAdmin } from "@/lib/server/admin";
+import { handleApiError } from "@/lib/server/errors";
+import { expireStalePendingBookings } from "@/lib/server/expiry";
 
 export async function GET(request: NextRequest) {
   try {
-    verifyAdmin(request);
+    await verifyAdmin(request);
+
+    // Keep the list honest: surface abandoned PENDING holds as CANCELLED.
+    await expireStalePendingBookings();
 
     const bookings = await prisma.booking.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-
+      orderBy: { createdAt: "desc" },
       include: {
         room: {
-          select: {
-            id: true,
-            title: true,
-            category: true,
-            pricePerNight: true,
-          },
+          select: { id: true, title: true, category: true, pricePerNight: true },
         },
-
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-
+        user: { select: { id: true, name: true, email: true } },
         payment: {
           select: {
             id: true,
@@ -42,18 +31,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(bookings);
   } catch (error) {
-    console.error(error);
-
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Internal Server Error",
-      },
-      {
-        status: 500,
-      }
-    );
+    return handleApiError(error);
   }
 }

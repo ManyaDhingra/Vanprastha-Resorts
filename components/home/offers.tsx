@@ -1,11 +1,13 @@
 "use client"
 
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import type { Offer } from '@/types/api'
+import type { Offer } from '@/lib/shared/content-types'
 
 interface Props { offers: Offer[] }
 
 export function OffersSection({ offers }: Props) {
+  const router = useRouter()
   return (
     <section className="py-16 bg-background">
       <div className="mx-auto max-w-6xl px-6">
@@ -21,7 +23,7 @@ export function OffersSection({ offers }: Props) {
               <p className="mt-2 text-sm text-slate-600">{o.subtitle}</p>
               <p className="mt-3 text-sm text-slate-500">{o.validThrough}</p>
               <div className="mt-4">
-                <Button variant="outline">{o.cta}</Button>
+                <Button variant="outline" onClick={() => router.push('/book')}>{o.cta}</Button>
               </div>
             </div>
           ))}
