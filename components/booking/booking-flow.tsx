@@ -4,7 +4,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/auth/auth-provider'
-import { apiFetch, calculateNights, formatINR } from '@/lib/utils'
+import { apiFetch, calculateNights, formatINR, todayIST } from '@/lib/utils'
 import type { RoomDto, BookingDto } from '@/lib/shared/types'
 
 type Step = 1 | 2 | 3 | 4 | 5
@@ -34,7 +34,7 @@ declare global {
 }
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10)
+  return todayIST() // resort-timezone "today" — matches server validation
 }
 
 function loadRazorpayScript(): Promise<boolean> {

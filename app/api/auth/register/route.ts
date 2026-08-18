@@ -1,19 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/server/prisma";
 import bcrypt from "bcrypt";
-import { signAuthToken } from "@/lib/server/auth";
-import { setSessionCookie } from "@/lib/server/auth";
+import { signAuthToken, setSessionCookie, normalizeEmail } from "@/lib/server/auth";
 import { HttpError, handleApiError } from "@/lib/server/errors";
+import { rateLimit, clientIp } from "@/lib/server/rate-limit";
 
-function normalizeEmail(email: unknown) {
-  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new HttpError(400, "A valid email address is required.");
-  }
-  return email.trim().toLowerCase();
-}
+// Registration is deliberately throttled harder than login: bcrypt cost-10
+// hashing is CPU-expensive and the endpoint is unauthenticated, so without
+// a gate it doubles as a CPU/DB DoS amplifier and an account-spam pipe.
+const REG_WINDOW = 60 * 60 * 1000;
+const REG_LIMIT = 5;
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate-limit before any work (hashing included).
+    const ipGate = rateLimit(`reg:${clientIp(request)}`, REG_LIMIT, REG_WINDOW);
+    if (!ipGate.allowed) {
+      throw new HttpError(
+        429,
+        "Too many registration attempts. Please try again later."
+      );
+    }
+
     const body = await request.json();
     const name = typeof body?.name === "string" ? body.name.trim() : "";
     const email = normalizeEmail(body?.email);

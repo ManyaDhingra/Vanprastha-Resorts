@@ -14,8 +14,8 @@ Premium mountain resort booking platform (Uttarakhand). Next.js 15 (App Router),
 
 ```bash
 npm install
+cp .env.example .env # FIRST — db:setup and seed read DATABASE_URL/ADMIN_PASSWORD from it; then fill in real values
 npm run db:setup     # creates local DB, applies migrations, seeds rooms + admin
-cp .env.example .env # then fill in real values
 npm run dev
 ```
 

@@ -75,7 +75,7 @@ export const systemNodes: MapNode[] = [
     h: 100,
     tone: "edge",
     description:
-      "Verifies the vp_token cookie (Web Crypto HMAC — jsonwebtoken cannot run on Edge) for /admin/* and redirects to /login otherwise. Sets CSP, X-Frame-Options, nosniff, referrer & permissions policy on every response.",
+      "Presence-gates /admin/* (redirects to /login when the vp_token cookie is absent) and sets CSP, X-Frame-Options, nosniff, referrer & permissions-policy headers on every response. JWT verification happens in the Node runtime (app/admin/layout.tsx + API routes) — jsonwebtoken cannot run on Edge.",
     files: ["middleware.ts"],
   },
   {

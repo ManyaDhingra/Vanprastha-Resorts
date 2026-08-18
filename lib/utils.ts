@@ -5,18 +5,26 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function parsePrice(price: string) {
-  if (!price) return 0
-  const digits = price.replace(/[^0-9]/g, '')
-  return Number(digits) || 0
-}
-
 /** Session cookie name (page-level auth for middleware; same JWT as the
  * Bearer token used by API routes). Single source so middleware and server
  * code can never drift. */
 export const TOKEN_COOKIE = 'vp_token'
 
 /* ---------- display helpers ---------- */
+
+/**
+ * Today's date (YYYY-MM-DD) in the resort's timezone (Asia/Kolkata), shared
+ * by server (check-in validation) and client (min-date pickers) so the two
+ * can never disagree about which day it is.
+ */
+export function todayIST(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+}
 
 export function formatINR(amount: number) {
   return new Intl.NumberFormat('en-IN', {

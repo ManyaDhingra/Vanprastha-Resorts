@@ -30,6 +30,19 @@ export async function POST(request: NextRequest) {
       throw new HttpError(429, "Too many booking attempts. Please slow down.");
     }
 
+    // Hold cap: without it, a client could keep creating PENDING bookings
+    // (recreating before the 24h sweep) and block any room's dates forever
+    // without ever paying. Three concurrent holds is plenty for a real guest.
+    const activeHolds = await prisma.booking.count({
+      where: { userId: decoded.userId, status: "PENDING" },
+    });
+    if (activeHolds >= 3) {
+      throw new HttpError(
+        409,
+        "You already have 3 pending bookings. Pay or cancel one before creating another."
+      );
+    }
+
     const body = await request.json();
     const { roomId, checkIn, checkOut, guests } = body ?? {};
 

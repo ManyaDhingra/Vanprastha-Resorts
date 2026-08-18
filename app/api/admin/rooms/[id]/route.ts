@@ -48,7 +48,10 @@ export async function PUT(request: NextRequest, { params }: Params) {
         pricePerNight: parsed.pricePerNight,
         image: parsed.image,
         highlights: parsed.highlights ?? [],
-        isActive: parsed.isActive ?? true,
+        // Only touch isActive when the client actually sent it: a partial
+        // update (e.g. rename) must not silently re-activate a room an admin
+        // deliberately deactivated. undefined omits the field from the write.
+        isActive: parsed.isActive ?? undefined,
       },
     });
 

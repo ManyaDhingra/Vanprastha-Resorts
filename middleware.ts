@@ -53,11 +53,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Admin pages + all API routes (API headers set on them too, though the
-    // auth check itself is per-route).
-    "/admin/:path*",
-    "/api/:path*",
-    "/book/:path*",
-    "/profile/:path*",
+    // Headers must reach every route (the homepage and /rooms were
+    // previously excluded, leaving them without CSP): everything except
+    // Next's own static/_next assets and the favicon. The admin gate logic
+    // above only fires on /admin/* paths regardless.
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };

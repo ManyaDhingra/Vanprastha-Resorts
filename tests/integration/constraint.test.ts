@@ -80,7 +80,7 @@ describe("bookings exclusion constraint (real Postgres)", () => {
     // The blocked window is Jan 10 → Jan 12. A guest checking IN Jan 12
     // (the previous guest's check-out morning) must be allowed — nights are
     // [checkIn, checkOut) and the checkout day is reusable.
-    await prisma.booking.create({
+    const reused = await prisma.booking.create({
       data: {
         userId: userId2,
         roomId,
@@ -90,12 +90,13 @@ describe("bookings exclusion constraint (real Postgres)", () => {
         totalAmount: 1000,
       },
     });
-    expect(true).toBe(true);
+    // Resolving IS the assertion: the DB would have thrown on overlap.
+    expect(reused.id).toBeTruthy();
   });
 
   it("allows non-overlapping bookings and cancelled bookings on the same dates", async () => {
     // Non-overlapping window (next month) — must succeed.
-    await prisma.booking.create({
+    const later = await prisma.booking.create({
       data: {
         userId: userId2,
         roomId,
@@ -105,9 +106,10 @@ describe("bookings exclusion constraint (real Postgres)", () => {
         totalAmount: 1000,
       },
     });
+    expect(later.id).toBeTruthy();
     // CANCELLED booking overlapping the blocked window — must succeed
     // (cancelled rows leave the indexed set).
-    await prisma.booking.create({
+    const cancelled = await prisma.booking.create({
       data: {
         userId: userId2,
         roomId,
@@ -118,6 +120,6 @@ describe("bookings exclusion constraint (real Postgres)", () => {
         status: "CANCELLED",
       },
     });
-    expect(true).toBe(true);
+    expect(cancelled.id).toBeTruthy();
   });
 });

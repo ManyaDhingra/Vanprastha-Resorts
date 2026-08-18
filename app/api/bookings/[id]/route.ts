@@ -68,6 +68,10 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
     validateGuests(guests, booking.room.capacity);
 
+    if (!booking.room.isActive) {
+      throw new HttpError(409, "This room is no longer available.");
+    }
+
     const nights = calculateNights(inDate, outDate);
     const totalAmount = nights * booking.room.pricePerNight;
 
@@ -78,24 +82,39 @@ export async function PUT(request: NextRequest, { params }: Params) {
       throw new HttpError(409, "Room is already booked for the selected dates.");
     }
 
-    const updated = await prisma.booking.update({
-      where: { id },
-      data: {
-        checkIn: inDate,
-        checkOut: outDate,
-        guests: guests as number,
-        totalAmount,
-      },
-    });
-
-    // The amount/dates changed: any order created for the old amount must not
-    // remain verifiable (a stale order would fail the live-amount assert in
-    // verify, but clearing the binding makes the failure early and clean —
-    // "create a new order"). Bound order ids are the only handle verification
-    // uses, so clearing them orphans the old Razorpay order safely.
-    await prisma.payment.updateMany({
-      where: { bookingId: id, status: "PENDING" },
-      data: { razorpayOrderId: null, razorpayPaymentId: null, razorpaySignature: null },
+    // Conditional write, atomic with the order-binding clear: the status is
+    // re-checked under the row lock (a concurrent sweep/admin-cancel cannot
+    // be revived by the stale read above), and the binding orphan happens in
+    // the same transaction — verify can never commit a payment against the
+    // old order between the two.
+    const updated = await prisma.$transaction(async (tx) => {
+      const updatedCount = await tx.booking.updateMany({
+        where: { id, status: "PENDING" },
+        data: {
+          checkIn: inDate,
+          checkOut: outDate,
+          guests: guests as number,
+          totalAmount,
+        },
+      });
+      if (updatedCount.count !== 1) {
+        throw new HttpError(409, "Booking is no longer awaiting payment.");
+      }
+      // The amount/dates changed: any order created for the old amount must
+      // not remain verifiable (a stale order would fail the live-amount
+      // assert in verify, but clearing the binding makes the failure early
+      // and clean — "create a new order"). Bound order ids are the only
+      // handle verification uses, so clearing them orphans the old Razorpay
+      // order safely.
+      await tx.payment.updateMany({
+        where: { bookingId: id, status: "PENDING" },
+        data: {
+          razorpayOrderId: null,
+          razorpayPaymentId: null,
+          razorpaySignature: null,
+        },
+      });
+      return tx.booking.findUnique({ where: { id } });
     });
 
     return NextResponse.json(updated);
@@ -126,10 +145,14 @@ export async function DELETE(request: NextRequest, { params }: Params) {
       );
     }
 
-    const cancelled = await prisma.booking.update({
-      where: { id },
+    const cancelledCount = await prisma.booking.updateMany({
+      where: { id, status: "PENDING" },
       data: { status: "CANCELLED" },
     });
+    if (cancelledCount.count !== 1) {
+      throw new HttpError(409, "Booking is no longer awaiting payment.");
+    }
+    const cancelled = await prisma.booking.findUnique({ where: { id } });
 
     return NextResponse.json(cancelled);
   } catch (error) {

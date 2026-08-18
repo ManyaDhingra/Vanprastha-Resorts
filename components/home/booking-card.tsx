@@ -4,10 +4,7 @@ import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10)
-}
+import { todayIST } from '@/lib/utils'
 
 /**
  * Hero availability card: submits dates/guests to the booking flow, which
@@ -41,7 +38,7 @@ export function BookingCard() {
         <input
           id="bc-checkin"
           type="date"
-          min={todayISO()}
+          min={todayIST()}
           value={checkIn}
           onChange={(e) => setCheckIn(e.target.value)}
           aria-label="Check in"
@@ -52,7 +49,7 @@ export function BookingCard() {
         <input
           id="bc-checkout"
           type="date"
-          min={checkIn || todayISO()}
+          min={checkIn || todayIST()}
           value={checkOut}
           onChange={(e) => setCheckOut(e.target.value)}
           aria-label="Check out"

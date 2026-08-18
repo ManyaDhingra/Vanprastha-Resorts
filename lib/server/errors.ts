@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
+import { ZodError } from "zod";
 
 /**
  * Typed HTTP error thrown by handlers/helpers.
@@ -30,6 +31,24 @@ export function handleApiError(error: unknown) {
     return NextResponse.json(
       { error: error.status === 500 ? "Internal Server Error" : error.message },
       { status: error.status }
+    );
+  }
+
+  if (error instanceof ZodError) {
+    // Zod schema violations are client input errors, not server faults.
+    const first = error.issues[0];
+    const where = first?.path?.length ? ` (${first.path.join(".")})` : "";
+    return NextResponse.json(
+      { error: `${first?.message ?? "Invalid input."}${where}` },
+      { status: 400 }
+    );
+  }
+
+  if (error instanceof SyntaxError) {
+    // request.json() throws SyntaxError on malformed bodies.
+    return NextResponse.json(
+      { error: "Malformed JSON body." },
+      { status: 400 }
     );
   }
 
@@ -74,8 +93,4 @@ export function handleApiError(error: unknown) {
     { error: "Internal Server Error" },
     { status: 500 }
   );
-}
-
-export function badRequest(message = "Invalid request.") {
-  return new HttpError(400, message);
 }

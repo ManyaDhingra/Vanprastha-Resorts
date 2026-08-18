@@ -40,10 +40,25 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       return NextResponse.json(booking); // idempotent
     }
 
-    const cancelled = await prisma.booking.update({
-      where: { id },
+    // Conditional write: if a concurrent verify committed CONFIRMED between
+    // the read above and this update, the WHERE fails — the paid booking is
+    // NOT cancelled (no silent refund-less cancellation of captured money).
+    const cancelledCount = await prisma.booking.updateMany({
+      where: { id, status: "PENDING" },
       data: { status: "CANCELLED" },
     });
+    if (cancelledCount.count !== 1) {
+      // Raced with verify/sweep since the read: re-read and answer truthfully.
+      const fresh = await prisma.booking.findUnique({ where: { id } });
+      if (fresh?.status === "CONFIRMED") {
+        throw new HttpError(
+          409,
+          "Booking was confirmed by the guest before cancellation — a refund flow is required."
+        );
+      }
+      return NextResponse.json(fresh); // already cancelled by the sweep
+    }
+    const cancelled = await prisma.booking.findUnique({ where: { id } });
     return NextResponse.json(cancelled);
   } catch (error) {
     return handleApiError(error);

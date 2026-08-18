@@ -3,14 +3,9 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { apiFetch } from '@/lib/utils'
-import { formatINR } from '@/lib/utils'
+import { apiFetch, formatINR, todayIST } from '@/lib/utils'
 
 type Availability = 'idle' | 'checking' | 'available' | 'unavailable' | 'error'
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10)
-}
 
 /**
  * Real availability check against /api/availability (live booking data).
@@ -69,7 +64,7 @@ export function AvailabilityWidget({
       <div className="mt-4 text-sm text-slate-600">From</div>
       <input
         type="date"
-        min={todayISO()}
+        min={todayIST()}
         value={checkIn}
         onChange={(e) => { setCheckIn(e.target.value); setAvailability('idle') }}
         className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2"
@@ -79,7 +74,7 @@ export function AvailabilityWidget({
       <div className="mt-3 text-sm text-slate-600">To</div>
       <input
         type="date"
-        min={checkIn || todayISO()}
+        min={checkIn || todayIST()}
         value={checkOut}
         onChange={(e) => { setCheckOut(e.target.value); setAvailability('idle') }}
         className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2"

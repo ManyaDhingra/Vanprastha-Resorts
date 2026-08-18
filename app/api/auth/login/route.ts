@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/server/prisma";
 import bcrypt from "bcrypt";
-import { signAuthToken } from "@/lib/server/auth";
-import { setSessionCookie } from "@/lib/server/auth";
+import { signAuthToken, setSessionCookie, normalizeEmail } from "@/lib/server/auth";
 import { HttpError, handleApiError } from "@/lib/server/errors";
 import { rateLimit, clientIp } from "@/lib/server/rate-limit";
 
@@ -15,13 +14,6 @@ const IP_WINDOW = 15 * 60 * 1000;
 const IP_LIMIT = 30;
 const EMAIL_WINDOW = 15 * 60 * 1000;
 const EMAIL_LIMIT = 10;
-
-function normalizeEmail(email: unknown) {
-  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new HttpError(400, "A valid email address is required.");
-  }
-  return email.trim().toLowerCase();
-}
 
 export async function POST(request: NextRequest) {
   try {

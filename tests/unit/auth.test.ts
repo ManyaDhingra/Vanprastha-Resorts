@@ -51,9 +51,12 @@ describe("auth tokens", () => {
   it("requires a strong JWT_SECRET at first use", () => {
     const prev = process.env.JWT_SECRET;
     process.env.JWT_SECRET = "short";
-    expect(() => signAuthToken({ id: "u", email: "e", role: "USER" })).toThrow(
-      /JWT_SECRET/
-    );
-    process.env.JWT_SECRET = prev;
+    try {
+      expect(() => signAuthToken({ id: "u", email: "e", role: "USER" })).toThrow(
+        /JWT_SECRET/
+      );
+    } finally {
+      process.env.JWT_SECRET = prev;
+    }
   });
 });

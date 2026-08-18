@@ -14,7 +14,26 @@ export async function expireStalePendingBookings(): Promise<number> {
   const result = await prisma.booking.updateMany({
     where: {
       status: "PENDING",
-      createdAt: { lt: cutoff },
+      // Keyed on updatedAt, not createdAt: any guest activity (PUT edit)
+      // resets the hold clock, so an old hold that's being actively worked
+      // is never swept mid-flow.
+      updatedAt: { lt: cutoff },
+      // A booking with a LIVE payment order is mid-checkout — sweeping it
+      // would let Razorpay capture money onto a cancelled booking (no refund
+      // path). Three cases are sweepable:
+      //  - no payment row at all (classic abandoned hold)
+      //  - payment row whose order binding was cleared by a PUT (abandoned)
+      //  - payment row old enough that its order is certainly dead
+      //    (Razorpay checkout windows are minutes, not days)
+      AND: [
+        {
+          OR: [
+            { payment: { is: null } },
+            { payment: { razorpayOrderId: null } },
+            { payment: { updatedAt: { lt: cutoff } } },
+          ],
+        },
+      ],
     },
     data: { status: "CANCELLED" },
   });

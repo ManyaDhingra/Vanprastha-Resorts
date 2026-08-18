@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: vanprastha
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/vanprastha?schema=public
+      JWT_SECRET: ci-secret-0123456789abcdef0123456789abcdef
+      ADMIN_EMAIL: admin@vanprastha.com
+      ADMIN_PASSWORD: CiAdminPassword2026!
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Migrate
+        run: npx prisma migrate deploy
+      - name: Seed
+        run: npx prisma db seed
+      - name: Unit + integration tests (real Postgres)
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: E2E API suite (server + PowerShell runner via pwsh)
+        run: |
+          npm run start &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/api/rooms > /dev/null && break
+            sleep 2
+          done
+          pwsh -File scripts/verify-api.ps1

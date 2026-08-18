@@ -1,7 +1,11 @@
 import { Prisma } from "@prisma/client";
 import { HttpError } from "./errors";
+import { todayIST } from "@/lib/utils";
 
 const DAY_MS = 1000 * 60 * 60 * 24;
+
+/** Longest stay accepted (nights). Guards totalAmount overflow and absurd holds. */
+export const MAX_STAY_NIGHTS = 365;
 
 /**
  * Parses "YYYY-MM-DD" date strings into UTC-midnight Dates.
@@ -21,20 +25,23 @@ export function parseBookingDates(checkIn: string, checkOut: string) {
 
   // "Today" in the resort's timezone (Asia/Kolkata), not UTC: a guest
   // booking their own local morning cannot be rejected because UTC already
-  // rolled over. en-CA formats as YYYY-MM-DD, comparable with checkIn.
-  const todayIST = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+  // rolled over. Shared helper — the client uses the same function so its
+  // min-date can never drift from the server's rejection rule.
+  const todayISTDate = todayIST();
 
-  if (checkIn < todayIST) {
+  if (checkIn < todayISTDate) {
     throw new HttpError(400, "Check-in date cannot be in the past.");
   }
 
   if (outDate <= inDate) {
     throw new HttpError(400, "Check-out date must be after check-in date.");
+  }
+
+  if (calculateNights(inDate, outDate) > MAX_STAY_NIGHTS) {
+    throw new HttpError(
+      400,
+      `Stays cannot exceed ${MAX_STAY_NIGHTS} nights.`
+    );
   }
 
   return { checkIn: inDate, checkOut: outDate };

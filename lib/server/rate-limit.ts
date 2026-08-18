@@ -38,9 +38,17 @@ export function rateLimit(
   return { allowed: true };
 }
 
-/** Best-effort client IP from proxy headers (behind a reverse proxy). */
+/**
+ * Best-effort client IP from proxy headers (behind a reverse proxy).
+ * Prefers x-real-ip (set by the reverse proxy itself, not spoofable by the
+ * client); falls back to the LAST x-forwarded-for entry — the leftmost value
+ * is attacker-controlled when not appended by a trusted proxy, whereas the
+ * rightmost is the address our own proxy recorded.
+ */
 export function clientIp(request: Request): string {
+  const real = request.headers.get("x-real-ip");
+  if (real) return real;
   const fwd = request.headers.get("x-forwarded-for");
-  if (fwd) return fwd.split(",")[0]?.trim() ?? "unknown";
-  return request.headers.get("x-real-ip") ?? "unknown";
+  if (fwd) return fwd.split(",").pop()?.trim() ?? "unknown";
+  return "unknown";
 }

@@ -19,10 +19,17 @@ function ExpectStatus($script, $expected, $label) {
   if (-not $ok) { throw "Assertion failed: $label" }
 }
 
+function ExpectTrue($cond, $label) {
+  Write-Host ("{0}: => {1}" -f $label, $(if ($cond) { "PASS" } else { "FAIL" }))
+  if (-not $cond) { throw "Assertion failed: $label" }
+}
+
 # dates: tomorrow .. +3 days
 $tomorrow = (Get-Date).AddDays(1).ToString("yyyy-MM-dd")
 $plus3 = (Get-Date).AddDays(3).ToString("yyyy-MM-dd")
-$roomId = (Invoke-RestMethod "$base/api/rooms" -TimeoutSec 30)[0].id
+$roomList = Invoke-RestMethod "$base/api/rooms" -TimeoutSec 30
+if ($roomList.Count -eq 0) { throw "No rooms seeded - run db:setup first." }
+$roomId = $roomList[0].id
 
 # --- register two users ---
 $suffix = Get-Random -Maximum 999999
@@ -54,7 +61,7 @@ ExpectStatus { Invoke-WebRequest "$base/api/bookings" -Method Post -ContentType 
 
 # --- availability false meanwhile ---
 $avail = Invoke-RestMethod "$base/api/availability?roomId=$roomId&checkIn=$tomorrow&checkOut=$plus3" -TimeoutSec 30
-Write-Host ("availability while booked: {0} => {1}" -f $avail.available, $(if ($avail.available -eq $false) { "PASS" } else { "FAIL" }))
+ExpectTrue ($avail.available -eq $false) ("availability while booked (got {0})" -f $avail.available)
 
 # --- IDOR: B cannot read/delete A's booking ---
 ExpectStatus { Invoke-WebRequest "$base/api/bookings/$bid" -Headers (AuthHeaders $tokB) -UseBasicParsing -TimeoutSec 30 } "404" "IDOR read B->A"
@@ -68,11 +75,11 @@ ExpectStatus { Invoke-WebRequest "$base/api/payment/create-order" -Method Post -
 
 # --- A cancels (PENDING only) ---
 $cancelled = Invoke-RestMethod "$base/api/bookings/$bid" -Method Delete -Headers (AuthHeaders $tokA) -TimeoutSec 30
-Write-Host ("cancel: status={0} => {1}" -f $cancelled.status, $(if ($cancelled.status -eq "CANCELLED") { "PASS" } else { "FAIL" }))
+ExpectTrue ($cancelled.status -eq "CANCELLED") ("cancel (got {0})" -f $cancelled.status)
 
 # --- dates free again (B can book now) ---
 $b2 = PostJson "/api/bookings" @{ roomId = $roomId; checkIn = $tomorrow; checkOut = $plus3; guests = 2 } (AuthHeaders $tokB)
-Write-Host ("rebook after cancel: id={0} => {1}" -f $b2.id, $(if ($b2.id) { "PASS" } else { "FAIL" }))
+ExpectTrue ($null -ne $b2.id) "rebook after cancel"
 $bid2 = $b2.id
 
 # --- B cancels own ---
@@ -84,12 +91,12 @@ $adminEmail = $env:ADMIN_EMAIL
 if (-not $adminEmail) { $adminEmail = "admin@vanprastha.com" }
 $adminPassword = $env:ADMIN_PASSWORD
 if (-not $adminPassword) {
-  throw "ADMIN_PASSWORD environment variable is required for the e2e suite (no hardcoded default credentials - see C1)."
+  throw "ADMIN_PASSWORD environment variable is required for the e2e suite (no hardcoded default credentials)."
 }
 $adminLogin = PostJson "/api/auth/login" @{ email = $adminEmail; password = $adminPassword }
 $tokAdmin = $adminLogin.token
 $adminBookings = Invoke-RestMethod "$base/api/admin/bookings" -Headers (AuthHeaders $tokAdmin) -TimeoutSec 30
-Write-Host ("admin bookings: count={0} => {1}" -f $adminBookings.Count, $(if ($adminBookings.Count -ge 0) { "PASS" } else { "FAIL" }))
+ExpectTrue ($adminBookings.Count -gt 0) ("admin bookings present (got {0})" -f $adminBookings.Count)
 $adminUsers = Invoke-RestMethod "$base/api/admin/users" -Headers (AuthHeaders $tokAdmin) -TimeoutSec 30
 Write-Host ("admin users: count={0} => {1}" -f $adminUsers.Count, $(if ($adminUsers.Count -ge 2) { "PASS" } else { "FAIL" }))
 $rev = Invoke-RestMethod "$base/api/admin/revenue" -Headers (AuthHeaders $tokAdmin) -TimeoutSec 30
@@ -110,8 +117,23 @@ Invoke-RestMethod "$base/api/admin/users/$($regB.user.id)" -Method Patch -Conten
 ExpectStatus { Invoke-WebRequest "$base/api/bookings" -Headers @{ Authorization = "Bearer forged.token.here" } -UseBasicParsing -TimeoutSec 30 } "401" "forged token"
 
 # --- middleware: /admin without cookie -> redirect ---
-$res = Invoke-WebRequest "$base/admin" -UseBasicParsing -MaximumRedirection 0 -TimeoutSec 30 -ErrorAction SilentlyContinue
-$loc = $res.Headers.Location
-Write-Host ("admin gate redirect: status={0} loc={1}" -f $res.StatusCode, $loc)
+# PS 5.1 returns the response object AND raises a terminating error when
+# MaximumRedirection is 0 on a redirect: capture both paths.
+$gateStatus = $null
+$gateLoc = $null
+try {
+  $res = Invoke-WebRequest "$base/admin" -UseBasicParsing -MaximumRedirection 0 -TimeoutSec 30 -ErrorAction SilentlyContinue
+  $gateStatus = $res.StatusCode
+  $gateLoc = $res.Headers.Location
+} catch {
+  $gateStatus = $_.Exception.Response.StatusCode.value__
+  $gateLoc = $_.Exception.Response.Headers["Location"]
+}
+ExpectTrue ($gateStatus -eq 307 -and $gateLoc -eq "/login") ("admin gate redirect (got {0} loc={1})" -f $gateStatus, $gateLoc)
+
+# Residue policy: created bookings are cancelled in-script (both PENDING
+# holds released; inventory fully free). CANCELLED rows + test users remain
+# as inert audit-trail records - there is deliberately no user-delete
+# endpoint, and the 24h sweep + admin cancel keep inventory clear.
 
 Write-Host "=== ALL API CHECKS DONE ==="

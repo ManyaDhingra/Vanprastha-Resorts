@@ -102,3 +102,14 @@ export async function clearSessionCookie() {
     maxAge: 0,
   });
 }
+
+/**
+ * Validates + normalizes an email address. Single source for login and
+ * register so both endpoints can never disagree about what is accepted.
+ */
+export function normalizeEmail(email: unknown): string {
+  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new HttpError(400, "A valid email address is required.");
+  }
+  return email.trim().toLowerCase();
+}
