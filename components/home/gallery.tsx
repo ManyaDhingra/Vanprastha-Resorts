@@ -1,5 +1,3 @@
-"use client"
-
 import Image from 'next/image'
 import type { GalleryItem } from '@/lib/shared/content-types'
 

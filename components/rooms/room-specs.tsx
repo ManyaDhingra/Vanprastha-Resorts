@@ -1,5 +1,3 @@
-"use client"
-
 export function RoomSpecs({ specs }: { specs: Record<string, string> }) {
   return (
     <div className="rounded-xl border border-slate-100 bg-white p-6 shadow-card">

@@ -54,7 +54,7 @@ export default async function RoomPage({ params }: RoomPageProps) {
             <p className="mt-2 text-sm font-medium tracking-wide text-slate-500">{room.category}</p>
 
             <div className="mt-6">
-              <DetailGallery images={images} />
+              <DetailGallery images={images} alt={`${room.title} room`} />
             </div>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-2">

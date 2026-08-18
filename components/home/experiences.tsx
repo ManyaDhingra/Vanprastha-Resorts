@@ -1,5 +1,3 @@
-"use client"
-
 import Image from 'next/image'
 import type { Experience } from '@/lib/shared/content-types'
 import { Container } from '@/components/ui/container'

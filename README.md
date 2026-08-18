@@ -28,6 +28,7 @@ Environment variables (`.env`, gitignored):
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Bootstrap admin (created by seed) |
 | `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Payment keys. Empty = payments disabled; bookings still work and show an honest "payment unavailable" state |
 | `NEXT_PUBLIC_RAZORPAY_KEY_ID` | Client-side Razorpay key (same value) |
+| `RAZORPAY_WEBHOOK_SECRET` | Signs server-to-server events (payment.captured / refund.processed). Empty = webhooks disabled (loud 503) |
 
 ## Quality gates
 

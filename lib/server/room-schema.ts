@@ -36,7 +36,9 @@ export type RoomInput = z.infer<typeof roomSchema>;
 /** Parses a numeric field from JSON body values (which arrive as strings). */
 export const intField = (v: unknown) => {
   if (typeof v === "number" && Number.isInteger(v)) return v;
-  if (typeof v === "string" && v.trim() !== "" && Number.isInteger(Number(v))) {
+  // Strict decimal digits ONLY — Number() would silently coerce hex
+  // ("0x10" -> 16), exponent ("1e3" -> 1000) and other notations.
+  if (typeof v === "string" && /^\d+$/.test(v.trim())) {
     return Number(v);
   }
   return undefined;

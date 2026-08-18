@@ -241,7 +241,16 @@ export function SystemMap() {
               <g
                 key={n.id}
                 onClick={() => setSelectedNode(isSel ? null : n.id)}
-                className="cursor-pointer"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedNode(isSel ? null : n.id);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-pressed={isSel}
+                className="cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
               >
                 <rect
                   x={n.x}

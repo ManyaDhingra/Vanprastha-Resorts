@@ -5,6 +5,7 @@ import {
   overlapWhere,
   validateGuests,
 } from "@/lib/server/booking";
+import { calculateNights as clientNights } from "@/lib/utils";
 import { HttpError } from "@/lib/server/errors";
 
 describe("parseBookingDates", () => {
@@ -85,5 +86,28 @@ describe("validateGuests", () => {
 
   it("rejects guests over room capacity", () => {
     expect(() => validateGuests(5, 4)).toThrow(HttpError);
+  });
+});
+
+describe("calculateNights parity (client <> server)", () => {
+  // The client version takes YYYY-MM-DD strings, the server takes Dates.
+  // If these ever diverge, the guest sees a different price than the API
+  // charges — this locks them together.
+  const client = (a: string, b: string) => clientNights(a, b);
+  const server = (a: string, b: string) =>
+    calculateNights(new Date(`${a}T00:00:00.000Z`), new Date(`${b}T00:00:00.000Z`));
+
+  const cases: [string, string, number][] = [
+    ["2026-09-10", "2026-09-12", 2],
+    ["2026-09-10", "2026-09-11", 1], // minimum
+    ["2026-09-28", "2026-10-02", 4], // month boundary
+    ["2028-02-27", "2028-03-02", 4], // leap-year boundary
+    ["2026-07-31", "2026-08-02", 2], // 31-day month edge
+    ["2026-12-30", "2027-01-02", 3], // year boundary
+  ];
+
+  it.each(cases)("matches across %s -> %s = %i nights", (a, b, expected) => {
+    expect(client(a, b)).toBe(expected);
+    expect(server(a, b)).toBe(expected);
   });
 });

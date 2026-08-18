@@ -1,5 +1,3 @@
-"use client"
-
 /**
  * Horizontal bar chart for admin analytics. Safe for all-zero or equal-value
  * series (no divide-by-zero: proportional heights, empty series renders

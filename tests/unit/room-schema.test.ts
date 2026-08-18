@@ -72,4 +72,33 @@ describe("intField", () => {
     expect(intField(null)).toBeUndefined();
     expect(intField(undefined)).toBeUndefined();
   });
+
+  it("rejects JS coercion notations (hex/octal/binary/exponent/sign)", () => {
+    expect(intField("0x10")).toBeUndefined();
+    expect(intField("1e3")).toBeUndefined();
+    expect(intField("0b101")).toBeUndefined();
+    expect(intField("0o17")).toBeUndefined();
+    expect(intField("+5")).toBeUndefined();
+    expect(intField("-5")).toBeUndefined();
+  });
+});
+
+describe("roomSchema boundaries", () => {
+  it("rejects out-of-range values", () => {
+    expect(() => roomSchema.parse({ ...valid, slug: "a" })).toThrow();
+    expect(() => roomSchema.parse({ ...valid, slug: "a".repeat(61) })).toThrow();
+    expect(() => roomSchema.parse({ ...valid, title: "x".repeat(121) })).toThrow();
+    expect(() => roomSchema.parse({ ...valid, category: "x".repeat(61) })).toThrow();
+    expect(() => roomSchema.parse({ ...valid, description: "d".repeat(2001) })).toThrow();
+    expect(() => roomSchema.parse({ ...valid, capacity: 51 })).toThrow();
+    expect(() => roomSchema.parse({ ...valid, size: 9 })).toThrow();
+    expect(() =>
+      roomSchema.parse({ ...valid, image: "/images/" + "a".repeat(493) })
+    ).toThrow();
+  });
+
+  it("rejects more than 20 highlights", () => {
+    const many = Array.from({ length: 21 }, (_, i) => `Highlight ${i}`);
+    expect(() => roomSchema.parse({ ...valid, highlights: many })).toThrow();
+  });
 });

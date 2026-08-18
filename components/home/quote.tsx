@@ -1,5 +1,3 @@
-"use client"
-
 export function QuoteSection() {
   return (
     <section className="py-16">

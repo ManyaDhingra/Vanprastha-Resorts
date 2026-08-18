@@ -22,6 +22,7 @@ enum PaymentStatus {
   PENDING
   SUCCESS
   FAILED
+  REFUNDED
 }
 
 model User {
@@ -89,6 +90,12 @@ model Booking {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // Query paths that run per user, per room inventory, and the expiry sweep;
+  // declared here (single source) so migrations and schema can never drift.
+  @@index([userId, createdAt])
+  @@index([roomId])
+  @@index([status, createdAt])
+
   @@map("bookings")
 }
 
@@ -101,6 +108,8 @@ model Payment {
   razorpayOrderId    String?
   razorpayPaymentId  String?
   razorpaySignature  String?
+  /// Razorpay refund id (set when a captured payment is refunded).
+  refundId           String?
 
   amount             Int
   status             PaymentStatus @default(PENDING)

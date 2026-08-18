@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from 'react'
-import { apiFetch, clearStoredSession, storeSession } from '@/lib/utils'
+import { apiFetch, clearStoredSession, getStoredToken, storeSession } from '@/lib/utils'
 
 export interface User {
   id: string
@@ -30,7 +30,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // A stored but expired/forged token is rejected and cleared.
   React.useEffect(() => {
     let mounted = true
-    const t = localStorage.getItem('vp_token')
+    // Same storage key the API layer uses (single source — no third literal).
+    const t = getStoredToken()
     if (!t) {
       setLoading(false)
       return

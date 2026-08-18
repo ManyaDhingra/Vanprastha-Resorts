@@ -92,6 +92,22 @@ async function seedRooms() {
 async function seedAdmin() {
   const email = (process.env.ADMIN_EMAIL ?? "admin@vanprastha.com").toLowerCase();
 
+  // Never rotate credentials on re-seed: a production re-run would silently
+  // change the live admin password and lock the ops team out. Role is
+  // enforced; the password of an existing admin stays untouched (rotate it
+  // deliberately instead).
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    await prisma.user.update({
+      where: { email },
+      data: { role: "ADMIN" },
+    });
+    console.log(
+      `✅ Admin exists: ${email} (role ensured; password NOT rotated by re-seed)`
+    );
+    return;
+  }
+
   // C1: no default credential. The old hardcoded default ("VanprasthaAdmin2026!")
   // was repo-known and exploitable; refusing to seed without a real password
   // makes the failure loud instead of shipping a backdoor.
@@ -111,20 +127,15 @@ async function seedAdmin() {
   }
 
   const hashed = await bcrypt.hash(password, 10);
-
-  await prisma.user.upsert({
-    where: { email },
-    // update rotates BOTH role and password — changing ADMIN_PASSWORD in env
-    // and re-running the seed changes the live admin credential.
-    update: { role: "ADMIN", password: hashed },
-    create: {
+  await prisma.user.create({
+    data: {
       name: "Vanprastha Admin",
       email,
       password: hashed,
       role: "ADMIN",
     },
   });
-  console.log(`✅ Admin user ready: ${email} (role: ADMIN)`);
+  console.log(`✅ Admin user created: ${email} (role: ADMIN)`);
 }
 
 async function main() {
