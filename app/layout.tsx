@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Cormorant_Garamond, Inter, Poppins } from 'next/font/google'
+import { Cormorant_Garamond, Inter } from 'next/font/google'
 import "../styles/globals.css";
 import { SiteHeader } from '@/components/layout/site-header'
 import { Footer } from '@/components/layout/footer'
@@ -16,13 +16,6 @@ const inter = Inter({
   subsets: ['latin'],
   variable: '--font-body',
   display: 'swap'
-})
-
-const poppins = Poppins({
-  subsets: ['latin'],
-  variable: '--font-accent',
-  display: 'swap',
-  weight: ['400', '500', '600', '700']
 })
 
 export const metadata: Metadata = {
@@ -44,12 +37,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${inter.variable} ${poppins.variable}`}>
+    <html lang="en" className={`${cormorant.variable} ${inter.variable}`}>
       <body className="min-h-screen bg-background text-text antialiased">
         <AuthProvider>
-          <div className="relative overflow-hidden">
+          <div className="flex min-h-screen flex-col">
             <SiteHeader />
-            {children}
+            <div className="flex-1">
+              {children}
+            </div>
             <Footer />
           </div>
         </AuthProvider>

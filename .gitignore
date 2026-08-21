@@ -6,6 +6,7 @@ out
 .DS_Store
 npm-debug.log*
 .vscode
+.freebuff/
 
 /generated/prisma
 tsconfig.tsbuildinfo

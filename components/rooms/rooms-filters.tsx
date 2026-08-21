@@ -36,18 +36,18 @@ export function RoomsFilters({ types, onChange }: Props) {
       onSubmit={(e) => e.preventDefault()}
     >
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-600">Min price (₹)</label>
-        <input value={priceMin} onChange={(e) => setPriceMin(e.target.value)} className="w-full rounded-md border border-slate-200 px-3 py-2" inputMode="numeric" />
+        <label className="mb-1 block text-xs font-medium text-text-muted">Min price (₹)</label>
+        <input value={priceMin} onChange={(e) => setPriceMin(e.target.value)} className="w-full rounded-md border border-border px-3 py-2" inputMode="numeric" />
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-600">Max price (₹)</label>
-        <input value={priceMax} onChange={(e) => setPriceMax(e.target.value)} className="w-full rounded-md border border-slate-200 px-3 py-2" inputMode="numeric" />
+        <label className="mb-1 block text-xs font-medium text-text-muted">Max price (₹)</label>
+        <input value={priceMax} onChange={(e) => setPriceMax(e.target.value)} className="w-full rounded-md border border-border px-3 py-2" inputMode="numeric" />
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-600">Guests</label>
-        <select value={guests} onChange={(e) => setGuests(e.target.value)} className="w-full rounded-md border border-slate-200 px-3 py-2">
+        <label className="mb-1 block text-xs font-medium text-text-muted">Guests</label>
+        <select value={guests} onChange={(e) => setGuests(e.target.value)} className="w-full rounded-md border border-border px-3 py-2">
           <option value="">Any</option>
           <option value="1">1</option>
           <option value="2">2</option>
@@ -57,8 +57,8 @@ export function RoomsFilters({ types, onChange }: Props) {
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-600">Room type</label>
-        <select value={type} onChange={(e) => setType(e.target.value)} className="w-full rounded-md border border-slate-200 px-3 py-2">
+        <label className="mb-1 block text-xs font-medium text-text-muted">Room type</label>
+        <select value={type} onChange={(e) => setType(e.target.value)} className="w-full rounded-md border border-border px-3 py-2">
           <option value="">Any</option>
           {types.map((t) => (
             <option key={t} value={t}>{t}</option>

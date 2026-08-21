@@ -52,40 +52,40 @@ export function AvailabilityWidget({
   }
 
   return (
-    <form onSubmit={check} className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
+    <form onSubmit={check} className="rounded-2xl border border-border/60 bg-surface p-6 shadow-card">
       <div className="flex items-baseline justify-between">
         <div>
-          <span className="text-2xl font-semibold text-slate-900">{formatINR(pricePerNight)}</span>
-          <span className="text-sm text-slate-500"> / night</span>
+          <span className="text-2xl font-semibold text-text">{formatINR(pricePerNight)}</span>
+          <span className="text-sm text-text-muted"> / night</span>
         </div>
-        <span className="text-xs text-slate-500">up to {capacity} guests</span>
+        <span className="text-xs text-text-muted">up to {capacity} guests</span>
       </div>
 
-      <div className="mt-4 text-sm text-slate-600">From</div>
+      <div className="mt-4 text-sm text-text-muted">From</div>
       <input
         type="date"
         min={todayIST()}
         value={checkIn}
         onChange={(e) => { setCheckIn(e.target.value); setAvailability('idle') }}
-        className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2"
+        className="mt-2 w-full rounded-md border border-border px-3 py-2"
         required
       />
 
-      <div className="mt-3 text-sm text-slate-600">To</div>
+      <div className="mt-3 text-sm text-text-muted">To</div>
       <input
         type="date"
         min={checkIn || todayIST()}
         value={checkOut}
         onChange={(e) => { setCheckOut(e.target.value); setAvailability('idle') }}
-        className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2"
+        className="mt-2 w-full rounded-md border border-border px-3 py-2"
         required
       />
 
-      <div className="mt-3 text-sm text-slate-600">Guests</div>
+      <div className="mt-3 text-sm text-text-muted">Guests</div>
       <select
         value={String(guests)}
         onChange={(e) => setGuests(Number(e.target.value))}
-        className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2"
+        className="mt-2 w-full rounded-md border border-border px-3 py-2"
       >
         {Array.from({ length: Math.min(6, Math.max(1, capacity)) }, (_, i) => i + 1).map((n) => (
           <option key={n} value={n}>{n}</option>
@@ -93,7 +93,7 @@ export function AvailabilityWidget({
       </select>
 
       {availability === 'checking' && (
-        <p className="mt-3 text-sm text-slate-500">Checking availability…</p>
+        <p className="mt-3 text-sm text-text-muted">Checking availability…</p>
       )}
       {availability === 'available' && (
         <p className="mt-3 text-sm text-emerald-700">✓ Available for these dates</p>

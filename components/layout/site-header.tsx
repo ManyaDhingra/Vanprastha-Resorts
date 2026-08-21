@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import React, { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 const navigation = [
   { label: 'Home', href: '/' },
   { label: 'Rooms', href: '/rooms' },
+  { label: 'Events', href: '/events' },
   { label: 'Book', href: '/book' },
 ]
 
@@ -48,7 +49,7 @@ export function SiteHeader() {
     <div className="flex items-center gap-3">
       <Link
         href={user.role === 'ADMIN' ? '/admin' : '/profile'}
-        className="hidden items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-800 md:flex"
+        className="hidden items-center gap-2 rounded-full border border-border bg-surface/80 px-4 py-2 text-sm font-medium text-text md:flex"
       >
         <User size={15} />
         {user.name.split(' ')[0]}
@@ -59,7 +60,7 @@ export function SiteHeader() {
         aria-label="Log out"
         className={cn(
           'rounded-full p-2 transition',
-          scrolled ? 'text-slate-600 hover:bg-slate-100' : 'text-white/90 hover:bg-white/10'
+          scrolled ? 'text-text-muted hover:bg-secondary' : 'text-white/90 hover:bg-surface/10'
         )}
       >
         <LogOut size={18} />
@@ -72,8 +73,8 @@ export function SiteHeader() {
         className={cn(
           'rounded-full px-4 py-2 text-sm font-medium transition',
           scrolled
-            ? 'text-slate-800 hover:bg-slate-100'
-            : 'text-white hover:bg-white/10'
+            ? 'text-text hover:bg-secondary'
+            : 'text-white hover:bg-surface/10'
         )}
       >
         Log in
@@ -90,7 +91,7 @@ export function SiteHeader() {
         'fixed inset-x-0 top-0 z-40 transition-all duration-300 ease-in-out',
         'backdrop-blur-md',
         scrolled
-          ? 'bg-white/95 border-b border-slate-200/70 shadow-sm'
+          ? 'bg-surface/95 border-b border-border/70 shadow-sm'
           : 'bg-transparent'
       )}
     >
@@ -112,8 +113,8 @@ export function SiteHeader() {
               href={item.href}
               className={cn(
                 'text-sm font-medium transition-colors duration-300',
-                scrolled ? 'text-slate-900 hover:text-slate-950' : 'text-white/95 hover:text-white',
-                pathname === item.href ? 'border-b-2 border-[#F97316] pb-1' : ''
+                scrolled ? 'text-text hover:text-text' : 'text-white/95 hover:text-white',
+                pathname === item.href ? 'border-b-2 border-accent pb-1' : ''
               )}
             >
               {item.label}
@@ -124,7 +125,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-3">
           {authAction}
           <button
-            className={cn('md:hidden inline-flex items-center justify-center rounded-lg p-2 transition', scrolled ? 'text-slate-700' : 'text-white')}
+            className={cn('md:hidden inline-flex items-center justify-center rounded-lg p-2 transition', scrolled ? 'text-text' : 'text-white')}
             onClick={() => setOpen(true)}
             aria-label="Open menu"
             aria-expanded={open}
@@ -147,7 +148,7 @@ export function SiteHeader() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', bounce: 0, stiffness: 300 }}
-              className="fixed inset-y-0 right-0 z-50 w-[84%] max-w-sm bg-white/95 p-6 shadow-lg backdrop-blur-md"
+              className="fixed inset-y-0 right-0 z-50 w-[84%] max-w-sm bg-surface/95 p-6 shadow-lg backdrop-blur-md"
               role="dialog"
               aria-modal="true"
               aria-label="Menu"
@@ -163,7 +164,7 @@ export function SiteHeader() {
 
               <div className="mt-8 flex flex-col gap-4">
                 {navigation.map((item) => (
-                  <Link key={item.href} href={item.href} onClick={close} className="text-base font-medium text-slate-800">
+                  <Link key={item.href} href={item.href} onClick={close} className="text-base font-medium text-text">
                     {item.label}
                   </Link>
                 ))}
@@ -172,24 +173,24 @@ export function SiteHeader() {
                     <Link
                       href={user.role === 'ADMIN' ? '/admin' : '/profile'}
                       onClick={close}
-                      className="text-base font-medium text-slate-800"
+                      className="text-base font-medium text-text"
                     >
                       {user.role === 'ADMIN' ? 'Admin panel' : 'My bookings'}
                     </Link>
                     <button
                       type="button"
                       onClick={() => { void logout(); close() }}
-                      className="text-left text-base font-medium text-slate-800"
+                      className="text-left text-base font-medium text-text"
                     >
                       Log out
                     </button>
                   </>
                 ) : (
                   <>
-                    <Link href="/login" onClick={close} className="text-base font-medium text-slate-800">
+                    <Link href="/login" onClick={close} className="text-base font-medium text-text">
                       Log in
                     </Link>
-                    <Link href="/register" onClick={close} className="text-base font-medium text-slate-800">
+                    <Link href="/register" onClick={close} className="text-base font-medium text-text">
                       Sign up
                     </Link>
                   </>
@@ -219,3 +220,4 @@ export function SiteHeader() {
     </header>
   )
 }
+

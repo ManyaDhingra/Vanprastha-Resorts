@@ -31,7 +31,7 @@ export function BookingCard() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="mx-auto w-full max-w-[1100px] rounded-[32px] bg-white/95 px-7 py-7 shadow-2xl"
+      className="mx-auto w-full max-w-[1100px] rounded-[32px] bg-surface/95 px-7 py-7 shadow-2xl"
     >
       <form onSubmit={submit} className="grid grid-cols-1 gap-3 sm:grid-cols-4">
         <label className="sr-only" htmlFor="bc-checkin">Check in</label>
@@ -42,7 +42,7 @@ export function BookingCard() {
           value={checkIn}
           onChange={(e) => setCheckIn(e.target.value)}
           aria-label="Check in"
-          className="rounded-md border border-slate-200 px-3 py-2"
+          className="rounded-md border border-border bg-surface px-3 py-2 text-text"
         />
 
         <label className="sr-only" htmlFor="bc-checkout">Check out</label>
@@ -53,7 +53,7 @@ export function BookingCard() {
           value={checkOut}
           onChange={(e) => setCheckOut(e.target.value)}
           aria-label="Check out"
-          className="rounded-md border border-slate-200 px-3 py-2"
+          className="rounded-md border border-border bg-surface px-3 py-2 text-text"
         />
 
         <label className="sr-only" htmlFor="bc-guests">Guests</label>
@@ -62,7 +62,7 @@ export function BookingCard() {
           aria-label="Guests"
           value={guests}
           onChange={(e) => setGuests(e.target.value)}
-          className="rounded-md border border-slate-200 px-3 py-2"
+          className="rounded-md border border-border bg-surface px-3 py-2 text-text"
         >
           <option value="1">1 guest</option>
           <option value="2">2 guests</option>

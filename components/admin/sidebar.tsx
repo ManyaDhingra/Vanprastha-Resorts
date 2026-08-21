@@ -1,8 +1,8 @@
-"use client"
+﻿"use client"
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Bed, Calendar, CreditCard, Users, LogOut } from 'lucide-react'
+import { Home, Bed, Calendar, CreditCard, Users, LogOut, Trophy } from 'lucide-react'
 import { useAuth } from '@/components/auth/auth-provider'
 import { cn } from '@/lib/utils'
 
@@ -12,6 +12,7 @@ const items = [
   { label: 'Bookings', href: '/admin/bookings', icon: Calendar },
   { label: 'Payments', href: '/admin/payments', icon: CreditCard },
   { label: 'Users', href: '/admin/users', icon: Users },
+  { label: 'Events', href: '/admin/events', icon: Trophy },
 ]
 
 export function AdminSidebar() {
@@ -30,7 +31,7 @@ export function AdminSidebar() {
               'shrink-0 rounded-full border px-4 py-2 text-sm',
               pathname === it.href
                 ? 'border-primary bg-primary text-white'
-                : 'border-slate-200 bg-white text-slate-700'
+                : 'border-border bg-surface text-text-muted'
             )}
           >
             {it.label}
@@ -39,17 +40,17 @@ export function AdminSidebar() {
         <button
           type="button"
           onClick={() => void logout()}
-          className="shrink-0 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700"
+          className="shrink-0 rounded-full border border-border bg-surface px-4 py-2 text-sm text-text-muted"
         >
           Log out
         </button>
       </nav>
 
       {/* Desktop: sidebar */}
-      <aside className="hidden w-72 shrink-0 self-start rounded-2xl bg-white p-6 shadow-md lg:block">
+      <aside className="hidden w-72 shrink-0 self-start rounded-2xl bg-surface p-6 shadow-md lg:block">
         <div className="mb-8">
           <h3 className="text-lg font-semibold">Admin</h3>
-          <p className="mt-1 text-sm text-slate-600">Vanprastha Resorts</p>
+          <p className="mt-1 text-sm text-text-muted">Vanprastha Resorts</p>
         </div>
 
         <nav className="flex flex-col gap-1">
@@ -61,10 +62,10 @@ export function AdminSidebar() {
                 key={it.href}
                 href={it.href}
                 className={cn(
-                  'flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-background hover:text-slate-900',
+                  'flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-secondary hover:text-text',
                   active
                     ? 'bg-primary/10 font-medium text-primary'
-                    : 'text-slate-700'
+                    : 'text-text-muted'
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -77,7 +78,7 @@ export function AdminSidebar() {
         <button
           type="button"
           onClick={() => void logout()}
-          className="mt-8 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-background"
+          className="mt-8 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-text-muted hover:bg-secondary"
         >
           <LogOut className="h-4 w-4" />
           <span>Log out</span>

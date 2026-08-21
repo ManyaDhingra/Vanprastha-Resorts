@@ -93,7 +93,7 @@ export default async function AdminDashboard() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-600">Total revenue</CardTitle>
+            <CardTitle className="text-sm text-text-muted">Total revenue</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold">{formatINR(stats.totalRevenue)}</p>
@@ -101,12 +101,12 @@ export default async function AdminDashboard() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-600">Rooms</CardTitle>
+            <CardTitle className="text-sm text-text-muted">Rooms</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold">
               {stats.activeRooms}
-              <span className="ml-1 text-sm font-normal text-slate-500">
+              <span className="ml-1 text-sm font-normal text-text-muted">
                 / {stats.totalRooms} total
               </span>
             </p>
@@ -114,7 +114,7 @@ export default async function AdminDashboard() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-600">Users</CardTitle>
+            <CardTitle className="text-sm text-text-muted">Users</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold">{stats.totalUsers}</p>
@@ -122,7 +122,7 @@ export default async function AdminDashboard() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-600">Bookings</CardTitle>
+            <CardTitle className="text-sm text-text-muted">Bookings</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
@@ -137,13 +137,13 @@ export default async function AdminDashboard() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-600">
+            <CardTitle className="text-sm text-text-muted">
               Revenue — last 6 months
             </CardTitle>
           </CardHeader>
           <CardContent>
             {stats.monthlyRevenue.length === 0 ? (
-              <p className="text-sm text-slate-500">No revenue yet.</p>
+              <p className="text-sm text-text-muted">No revenue yet.</p>
             ) : (
               <ChartBar
                 data={stats.monthlyRevenue.map((m) => ({ label: m.month, value: m.total }))}
@@ -155,13 +155,13 @@ export default async function AdminDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-slate-600">Recent bookings</CardTitle>
+            <CardTitle className="text-sm text-text-muted">Recent bookings</CardTitle>
           </CardHeader>
           <CardContent>
             {stats.recentBookings.length === 0 ? (
-              <p className="text-sm text-slate-500">No bookings yet.</p>
+              <p className="text-sm text-text-muted">No bookings yet.</p>
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-border/60">
                 {stats.recentBookings.map((b) => (
                   <li key={b.id} className="py-2 text-sm">
                     <div className="flex items-center justify-between">
@@ -178,7 +178,7 @@ export default async function AdminDashboard() {
                         {b.status}
                       </span>
                     </div>
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-text-muted">
                       {b.user.name} · {b.checkIn.toLocaleDateString()} →{" "}
                       {b.checkOut.toLocaleDateString()}
                     </div>

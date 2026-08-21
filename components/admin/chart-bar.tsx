@@ -22,11 +22,11 @@ export function ChartBar({
               style={{ height: max === 0 ? 0 : `${Math.round((d.value / max) * 100)}%` }}
             />
           </div>
-          <span className="text-[10px] text-slate-500">{d.label}</span>
+          <span className="text-[10px] text-text-muted">{d.label}</span>
         </div>
       ))}
       {data.length === 0 && (
-        <p className="w-full text-center text-sm text-slate-500">No data</p>
+        <p className="w-full text-center text-sm text-text-muted">No data</p>
       )}
     </div>
   )

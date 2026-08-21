@@ -51,17 +51,17 @@ export default function ProfilePage() {
 
   if (authLoading) {
     return (
-      <main className="py-12">
-        <div className="mx-auto max-w-md px-6 text-sm text-slate-500">Loading…</div>
+      <main className="pt-28 pb-12">
+        <div className="mx-auto max-w-md px-6 text-sm text-text-muted">Loading…</div>
       </main>
     )
   }
 
   if (!user) {
     return (
-      <main className="py-12">
+      <main className="pt-28 pb-12">
         <div className="mx-auto max-w-md px-6 text-center">
-          <p className="text-slate-700">You are not logged in.</p>
+          <p className="text-text-muted">You are not logged in.</p>
           <div className="mt-4">
             <Button asChild>
               <Link href="/login">Login</Link>
@@ -73,14 +73,14 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="py-12">
+    <main className="pt-28 pb-12">
       <div className="mx-auto max-w-2xl px-6">
         <h1 className="mb-4 text-2xl font-semibold">Profile</h1>
-        <div className="rounded-xl bg-white p-6 shadow-card">
-          <div className="text-sm text-slate-600">Name</div>
-          <div className="mt-1 text-lg font-medium text-slate-900">{user.name}</div>
-          <div className="mt-4 text-sm text-slate-600">Email</div>
-          <div className="mt-1 text-sm text-slate-900">{user.email}</div>
+        <div className="rounded-xl bg-surface p-6 shadow-card">
+          <div className="text-sm text-text-muted">Name</div>
+          <div className="mt-1 text-lg font-medium text-text">{user.name}</div>
+          <div className="mt-4 text-sm text-text-muted">Email</div>
+          <div className="mt-1 text-sm text-text">{user.email}</div>
 
           <div className="mt-6 flex items-center gap-3">
             <Button variant="outline" onClick={() => { void logout(); router.push('/') }}>
@@ -99,7 +99,7 @@ export default function ProfilePage() {
           </div>
         )}
         {bookings.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-text-muted">
             No bookings yet.{' '}
             <Link href="/book" className="text-primary underline">
               Book your stay
@@ -108,16 +108,16 @@ export default function ProfilePage() {
         ) : (
           <div className="grid gap-4">
             {bookings.map((b) => (
-              <div key={b.id} className="rounded-xl border border-slate-100 bg-white p-4 shadow-card">
+              <div key={b.id} className="rounded-xl border border-border/60 bg-surface p-4 shadow-card">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <Link
                       href={`/rooms/${b.room.slug}`}
-                      className="font-medium text-slate-900 hover:underline"
+                      className="font-medium text-text hover:underline"
                     >
                       {b.room.title}
                     </Link>
-                    <div className="mt-1 text-xs text-slate-500">
+                    <div className="mt-1 text-xs text-text-muted">
                       {new Date(b.checkIn).toLocaleDateString()} →{' '}
                       {new Date(b.checkOut).toLocaleDateString()} · {b.guests} guests
                     </div>
@@ -135,7 +135,7 @@ export default function ProfilePage() {
                     </span>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold text-slate-900">
+                    <div className="font-semibold text-text">
                       {formatINR(b.totalAmount)}
                     </div>
                     {b.status === 'PENDING' && (

@@ -15,7 +15,7 @@ export function Hero() {
         className="relative h-[75vh] min-h-[520px] w-full overflow-hidden sm:h-[85vh] lg:h-[95vh] xl:h-[100vh]"
       >
         <Image
-          src="/images/hero-mountains.png"
+          src="/images/hero-mountains.webp"
           alt="Vanprastha Resorts mountain view"
           fill
           className="object-cover object-center"
@@ -29,10 +29,10 @@ export function Hero() {
 
         <div className="absolute inset-0 flex items-center justify-center px-6">
           <div className="mx-auto flex w-full max-w-[800px] flex-col items-center text-center text-white">
-            <p className="mb-8 inline-flex rounded-full bg-[#FEE7D6]/90 px-4 py-2 text-sm font-semibold uppercase tracking-[0.28em] text-[#C65B24]">
+            <p className="mb-8 inline-flex rounded-full border border-[#A87A3B]/20 bg-[#F5F0E8]/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-[#A87A3B]">
               Himalayan luxury sanctuary
             </p>
-            <h1 className="font-heading text-4xl font-semibold leading-tight sm:text-5xl xl:text-6xl">
+            <h1 className="font-heading text-4xl font-normal leading-[1.15] sm:text-5xl xl:text-6xl">
               Vanprastha Resorts — a calm mountain refuge in Uttarakhand
             </h1>
             <p className="mt-6 max-w-[640px] text-lg leading-8 text-white/90">

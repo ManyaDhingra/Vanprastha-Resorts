@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/auth/auth-provider'
 import { apiFetch, calculateNights, formatINR, todayIST } from '@/lib/utils'
@@ -56,6 +57,7 @@ function loadRazorpayScript(): Promise<boolean> {
 }
 
 export function BookingFlow() {
+  const router = useRouter()
   const { user, token, loading: authLoading } = useAuth()
   const [step, setStep] = React.useState<Step>(1)
   const [rooms, setRooms] = React.useState<RoomDto[]>([])
@@ -185,7 +187,7 @@ export function BookingFlow() {
         description: `Stay at ${selectedRoom.title}`,
         order_id: order.orderId,
         prefill: { name: user?.name, email: user?.email },
-        theme: { color: '#0f766e' },
+        theme: { color: '#1E3A2D' },
         modal: {
           ondismiss: () => {
             // Payment aborted — booking remains PENDING; allow retry.
@@ -199,11 +201,8 @@ export function BookingFlow() {
               method: 'POST',
               body: JSON.stringify(response),
             })
-            // Refetch so the confirmation shows the real CONFIRMED status.
-            const updated = await apiFetch<BookingDto>(`/api/bookings/${created.id}`)
-            setBooking(updated)
-            setPayPhase('success')
-            setStep(5)
+            // Go to dedicated confirmation page (shareable, bookmarkable)
+            router.push(`/book/confirmation?id=${created.id}`)
           } catch (e) {
             setError(e instanceof Error ? e.message : 'Payment verification failed.')
             setPayPhase('idle')
@@ -234,10 +233,10 @@ export function BookingFlow() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl rounded-2xl bg-white p-6 shadow-soft">
+    <div className="mx-auto max-w-3xl rounded-2xl bg-surface p-6 shadow-soft">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-900">Reserve your stay</h2>
-        <div className="text-sm text-slate-600">Step {step} of 5</div>
+        <h2 className="text-lg font-semibold text-text">Reserve your stay</h2>
+        <div className="text-sm text-text-muted">Step {step} of 5</div>
       </div>
 
       {error && (
@@ -249,7 +248,7 @@ export function BookingFlow() {
       {step === 1 && (
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <label htmlFor="check-in" className="text-sm text-slate-600">
+            <label htmlFor="check-in" className="text-sm text-text-muted">
               Check-in
             </label>
             <input
@@ -258,11 +257,11 @@ export function BookingFlow() {
               min={todayISO()}
               value={checkIn}
               onChange={(e) => setCheckIn(e.target.value)}
-              className="rounded-md border border-slate-200 px-3 py-2"
+              className="rounded-md border border-border px-3 py-2"
             />
           </div>
           <div className="grid gap-2">
-            <label htmlFor="check-out" className="text-sm text-slate-600">
+            <label htmlFor="check-out" className="text-sm text-text-muted">
               Check-out
             </label>
             <input
@@ -271,7 +270,7 @@ export function BookingFlow() {
               min={checkIn || todayISO()}
               value={checkOut}
               onChange={(e) => setCheckOut(e.target.value)}
-              className="rounded-md border border-slate-200 px-3 py-2"
+              className="rounded-md border border-border px-3 py-2"
             />
           </div>
           {checkIn && checkOut && !datesValid && (
@@ -290,14 +289,14 @@ export function BookingFlow() {
       {step === 2 && (
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <label htmlFor="guests" className="text-sm text-slate-600">
+            <label htmlFor="guests" className="text-sm text-text-muted">
               Guests
             </label>
             <select
               id="guests"
               value={guests}
               onChange={(e) => setGuests(Number(e.target.value))}
-              className="rounded-md border border-slate-200 px-3 py-2"
+              className="rounded-md border border-border px-3 py-2"
             >
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <option key={n} value={n}>{n}</option>
@@ -306,7 +305,7 @@ export function BookingFlow() {
           </div>
 
           <div className="grid gap-2">
-            <label htmlFor="room" className="text-sm text-slate-600">
+            <label htmlFor="room" className="text-sm text-text-muted">
               Select room
             </label>
             {roomsError ? (
@@ -321,7 +320,7 @@ export function BookingFlow() {
                   setSelectedRoomId(e.target.value)
                   setGuests((g) => Math.min(g, 6))
                 }}
-                className="rounded-md border border-slate-200 px-3 py-2"
+                className="rounded-md border border-border px-3 py-2"
               >
                 <option value="">Choose a room</option>
                 {rooms.map((r) => (
@@ -357,25 +356,25 @@ export function BookingFlow() {
 
       {step === 3 && selectedRoom && (
         <div className="grid gap-4">
-          <h3 className="text-sm font-medium text-slate-600">Review booking</h3>
-          <div className="rounded-lg border border-slate-100 bg-white p-4">
-            <div className="text-sm text-slate-700">
+          <h3 className="text-sm font-medium text-text-muted">Review booking</h3>
+          <div className="rounded-lg border border-border/60 bg-surface p-4">
+            <div className="text-sm text-text-muted">
               Room: <strong>{selectedRoom.title}</strong> ({selectedRoom.category})
             </div>
-            <div className="text-sm text-slate-700">Dates: {checkIn} → {checkOut}</div>
-            <div className="text-sm text-slate-700">Guests: {guests}</div>
-            <div className="text-sm text-slate-700">Nights: {nights}</div>
+            <div className="text-sm text-text-muted">Dates: {checkIn} → {checkOut}</div>
+            <div className="text-sm text-text-muted">Guests: {guests}</div>
+            <div className="text-sm text-text-muted">Nights: {nights}</div>
             <div className="mt-3 text-sm font-semibold">
               Total: {formatINR(total)}
-              <span className="ml-2 font-normal text-slate-500">
+              <span className="ml-2 font-normal text-text-muted">
                 ({formatINR(selectedRoom.pricePerNight)} × {nights} nights)
               </span>
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-100 p-4 text-sm">
+          <div className="rounded-lg border border-border/60 p-4 text-sm">
             {availability === 'checking' && (
-              <p className="text-slate-600">Checking availability…</p>
+              <p className="text-text-muted">Checking availability…</p>
             )}
             {availability === 'available' && (
               <p className="text-emerald-700">✓ Available for your dates</p>
@@ -396,7 +395,7 @@ export function BookingFlow() {
               <button
                 type="button"
                 onClick={() => void checkAvailability()}
-                className="text-teal-700 underline"
+                className="text-primary underline"
               >
                 Check availability
               </button>
@@ -417,34 +416,44 @@ export function BookingFlow() {
 
       {step === 4 && (
         <div className="grid gap-4">
-          <h3 className="text-sm font-medium text-slate-600">Payment</h3>
+          <h3 className="text-sm font-medium text-text-muted">Payment</h3>
 
-          {!user && (
-            <div className="rounded-lg border border-slate-100 bg-white p-4 text-sm">
-              <p className="text-slate-700">
-                Please{' '}
-                <Link href="/login" className="font-medium text-teal-700 underline">
-                  log in
-                </Link>{' '}
-                or{' '}
-                <Link href="/register" className="font-medium text-teal-700 underline">
-                  create an account
-                </Link>{' '}
-                to pay for your stay. Your selected dates and room will not be
-                reserved until checkout completes.
-              </p>
-            </div>
-          )}
+          {!user && (() => {
+            const nextParams = new URLSearchParams()
+            if (checkIn) nextParams.set('checkIn', checkIn)
+            if (checkOut) nextParams.set('checkOut', checkOut)
+            if (guests) nextParams.set('guests', String(guests))
+            if (selectedRoomId) {
+              const rm = rooms.find((r) => r.id === selectedRoomId)
+              nextParams.set('room', rm?.slug ?? selectedRoomId)
+            }
+            const nextUrl = `/book?${nextParams.toString()}`
+            return (
+              <div className="rounded-lg border border-border/60 bg-surface p-4 text-sm">
+                <p className="text-text-muted">
+                  Please{' '}
+                  <Link href={`/login?next=${encodeURIComponent(nextUrl)}`} className="font-medium text-primary underline">
+                    log in
+                  </Link>{' '}
+                  or{' '}
+                  <Link href={`/register?next=${encodeURIComponent(nextUrl)}`} className="font-medium text-primary underline">
+                    create an account
+                  </Link>{' '}
+                  to pay for your stay. Your selected dates and room will be saved — you’ll return here to complete payment.
+                </p>
+              </div>
+            )
+          })()}
 
           {user && (
             <>
-              <div className="rounded-lg border border-slate-100 bg-white p-4 text-sm">
-                <div className="text-slate-700">
+              <div className="rounded-lg border border-border/60 bg-surface p-4 text-sm">
+                <div className="text-text-muted">
                   Room: <strong>{selectedRoom?.title}</strong>
                 </div>
-                <div className="text-slate-700">Dates: {checkIn} → {checkOut}</div>
-                <div className="text-slate-700">Guests: {guests}</div>
-                <div className="mt-2 font-semibold text-slate-900">
+                <div className="text-text-muted">Dates: {checkIn} → {checkOut}</div>
+                <div className="text-text-muted">Guests: {guests}</div>
+                <div className="mt-2 font-semibold text-text">
                   Total due: {formatINR(total)}
                 </div>
               </div>
@@ -457,13 +466,13 @@ export function BookingFlow() {
                     will contact you to complete payment.
                   </p>
                   <div className="mt-3 flex gap-3">
-                    <Button onClick={() => setStep(5)}>See confirmation</Button>
+                    <Button onClick={() => router.push(`/book/confirmation?id=${booking.id}`)}>See confirmation</Button>
                   </div>
                 </div>
               )}
 
               {payPhase !== 'unconfigured' && (
-                <div className="rounded-lg border border-slate-100 bg-white p-4 text-sm text-slate-600">
+                <div className="rounded-lg border border-border/60 bg-surface p-4 text-sm text-text-muted">
                   <p>
                     You will be redirected to Razorpay&apos;s secure
                     checkout to complete the payment.
@@ -502,24 +511,24 @@ export function BookingFlow() {
 
       {step === 5 && booking && (
         <div className="grid gap-4">
-          <h3 className="text-sm font-medium text-slate-600">
+          <h3 className="text-sm font-medium text-text-muted">
             {payPhase === 'success'
               ? 'Payment confirmed — stay booked!'
               : 'Reservation received'}
           </h3>
-          <div className="rounded-lg border border-slate-100 bg-white p-4">
-            <div className="text-sm text-slate-700">
+          <div className="rounded-lg border border-border/60 bg-surface p-4">
+            <div className="text-sm text-text-muted">
               Booking ID: <strong>{booking.id}</strong>
             </div>
-            <div className="text-sm text-slate-700">
+            <div className="text-sm text-text-muted">
               Status: <strong>{booking.status}</strong>
             </div>
-            <div className="text-sm text-slate-700">
+            <div className="text-sm text-text-muted">
               Total: <strong>{formatINR(booking.totalAmount)}</strong>
             </div>
             <div className="mt-3 text-sm">
               {payPhase === 'success' ? (
-                <p className="text-slate-600">
+                <p className="text-text-muted">
                   A confirmation of your stay has been recorded. Manage it from
                   your profile.
                 </p>

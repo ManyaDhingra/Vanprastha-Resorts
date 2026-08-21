@@ -45,10 +45,10 @@ export function RoomsPageClient({ rooms }: { rooms: RoomDto[] }) {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-12">
-      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="font-heading text-2xl font-semibold text-slate-900">Rooms</h1>
-          <p className="mt-1 text-sm text-slate-500">{total} room{total === 1 ? '' : 's'}</p>
+          <h1 className="font-heading text-3xl font-normal leading-[1.15] text-text">Rooms</h1>
+          <p className="mt-2 text-sm text-text-muted">{total} room{total === 1 ? '' : 's'} · all from the same calm inventory</p>
         </div>
         <div className="flex items-center gap-4">
           <SortSelect value={sort} onChange={setSort} />
@@ -60,7 +60,7 @@ export function RoomsPageClient({ rooms }: { rooms: RoomDto[] }) {
       </div>
 
       {rooms.length === 0 ? (
-        <div className="py-20 text-center text-slate-600">
+        <div className="py-20 text-center text-text-muted">
           No rooms available right now. Please check back soon.
         </div>
       ) : (
@@ -73,7 +73,7 @@ export function RoomsPageClient({ rooms }: { rooms: RoomDto[] }) {
 
           <Pagination page={page} total={total} perPage={perPage} onPageChange={setPage} />
           {total === 0 && (
-            <p className="mt-6 text-center text-slate-600">No rooms matched your filters.</p>
+            <p className="mt-6 text-center text-text-muted">No rooms matched your filters.</p>
           )}
         </>
       )}

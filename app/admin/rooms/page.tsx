@@ -179,7 +179,7 @@ export default function AdminRooms() {
   }
 
   const fieldCls =
-    'w-full rounded-md border border-slate-200 px-3 py-2 text-sm'
+    'w-full rounded-md border border-border px-3 py-2 text-sm'
 
   return (
     <div>
@@ -201,8 +201,8 @@ export default function AdminRooms() {
       )}
 
       {createOpen && (
-        <div className="mb-6 grid gap-3 rounded-xl border border-slate-100 bg-white p-4 shadow-card sm:grid-cols-2">
-          <h2 className="sm:col-span-2 text-sm font-semibold text-slate-900">
+        <div className="mb-6 grid gap-3 rounded-xl border border-border/60 bg-surface p-4 shadow-card sm:grid-cols-2">
+          <h2 className="sm:col-span-2 text-sm font-semibold text-text">
             New room
           </h2>
           {(
@@ -217,7 +217,7 @@ export default function AdminRooms() {
             ] as const
           ).map(([key, label]) => (
             <div key={key} className="grid gap-1">
-              <label className="text-xs text-slate-600">{label}</label>
+              <label className="text-xs text-text-muted">{label}</label>
               <input
                 className={fieldCls}
                 value={form[key]}
@@ -226,7 +226,7 @@ export default function AdminRooms() {
             </div>
           ))}
           <div className="grid gap-1 sm:col-span-2">
-            <label className="text-xs text-slate-600">Highlights (comma separated)</label>
+            <label className="text-xs text-text-muted">Highlights (comma separated)</label>
             <input
               className={fieldCls}
               value={form.highlights}
@@ -234,7 +234,7 @@ export default function AdminRooms() {
             />
           </div>
           <div className="grid gap-1 sm:col-span-2">
-            <label className="text-xs text-slate-600">Description</label>
+            <label className="text-xs text-text-muted">Description</label>
             <textarea
               className={fieldCls}
               rows={2}
@@ -256,19 +256,19 @@ export default function AdminRooms() {
       )}
 
       {loading ? (
-        <p className="text-sm text-slate-500">Loading rooms…</p>
+        <p className="text-sm text-text-muted">Loading rooms…</p>
       ) : rooms.length === 0 ? (
-        <p className="text-sm text-slate-500">No rooms yet.</p>
+        <p className="text-sm text-text-muted">No rooms yet.</p>
       ) : (
         <div className="grid gap-4">
           {rooms.map((room) => (
             <div
               key={room.id}
-              className="rounded-xl border border-slate-100 bg-white p-4 shadow-card"
+              className="rounded-xl border border-border/60 bg-surface p-4 shadow-card"
             >
               {editingId === room.id && editingForm ? (
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <h2 className="sm:col-span-2 text-sm font-semibold text-slate-900">
+                  <h2 className="sm:col-span-2 text-sm font-semibold text-text">
                     Edit — {room.title}
                   </h2>
                   {(
@@ -283,7 +283,7 @@ export default function AdminRooms() {
                     ] as const
                   ).map(([key, label]) => (
                     <div key={key} className="grid gap-1">
-                      <label className="text-xs text-slate-600">{label}</label>
+                      <label className="text-xs text-text-muted">{label}</label>
                       <input
                         className={fieldCls}
                         value={editingForm[key]}
@@ -292,7 +292,7 @@ export default function AdminRooms() {
                     </div>
                   ))}
                   <div className="grid gap-1 sm:col-span-2">
-                    <label className="text-xs text-slate-600">Highlights</label>
+                    <label className="text-xs text-text-muted">Highlights</label>
                     <input
                       className={fieldCls}
                       value={editingForm.highlights}
@@ -300,7 +300,7 @@ export default function AdminRooms() {
                     />
                   </div>
                   <div className="grid gap-1 sm:col-span-2">
-                    <label className="text-xs text-slate-600">Description</label>
+                    <label className="text-xs text-text-muted">Description</label>
                     <textarea
                       className={fieldCls}
                       rows={2}
@@ -323,7 +323,7 @@ export default function AdminRooms() {
                         setEditingId(null)
                         setEditingForm(null)
                       }}
-                      className="rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-700"
+                      className="rounded-full border border-border px-4 py-2 text-sm text-text-muted"
                     >
                       Cancel
                     </button>
@@ -340,28 +340,28 @@ export default function AdminRooms() {
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium text-slate-900">{room.title}</span>
+                      <span className="font-medium text-text">{room.title}</span>
                       {!room.isActive && (
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-text-muted">
                           Inactive
                         </span>
                       )}
                     </div>
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-text-muted">
                       {room.category} · {room.capacity} guests · {room.size} sq ft ·
                       {room._count.bookings} booking(s)
                     </div>
                     <div className="text-xs text-slate-400">/{room.slug}</div>
                   </div>
-                  <div className="font-semibold text-slate-900">
+                  <div className="font-semibold text-text">
                     {formatINR(room.pricePerNight)}
-                    <span className="text-xs font-normal text-slate-500">/night</span>
+                    <span className="text-xs font-normal text-text-muted">/night</span>
                   </div>
                   <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => startEdit(room)}
-                      className="rounded-md border border-slate-200 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
+                      className="rounded-md border border-border px-3 py-1.5 text-xs text-text-muted hover:bg-secondary"
                     >
                       Edit
                     </button>
@@ -369,7 +369,7 @@ export default function AdminRooms() {
                       type="button"
                       disabled={busy === room.id}
                       onClick={() => void toggleActive(room)}
-                      className="rounded-md border border-slate-200 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                      className="rounded-md border border-border px-3 py-1.5 text-xs text-text-muted hover:bg-secondary disabled:opacity-50"
                     >
                       {busy === room.id ? '…' : room.isActive ? 'Deactivate' : 'Activate'}
                     </button>

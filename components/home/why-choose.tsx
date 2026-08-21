@@ -20,21 +20,20 @@ export function WhyChoose() {
     <section className="py-16">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.28em] text-[#6B7280]">Why choose us</p>
-          <h2 className="font-heading text-3xl font-semibold text-slate-950">A quiet, purposeful hospitality</h2>
-          <p className="mt-4 text-slate-600">We focus on calm design, restorative services and curated experiences that return clarity and rest.</p>
+          <h2 className="font-heading text-3xl font-normal leading-[1.15] text-text">A quiet, purposeful hospitality</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-7 text-text-muted">We focus on calm design, restorative services and curated experiences that return clarity and rest.</p>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-3">
+        <div className="mt-12 grid gap-8 sm:grid-cols-3 sm:gap-6">
           {items.map((it) => (
-            <div key={it.title} className="rounded-xl border border-slate-100 bg-white p-6 shadow-card">
+            <div key={it.title} className="border-t border-border pt-6">
               <div className="flex items-start gap-4">
-                <div className="rounded-lg bg-[#E9F3F0] p-3 text-[#276A45]">
-                  <Check size={20} />
+                <div className="shrink-0 rounded-full bg-secondary p-2.5 text-primary">
+                  <Check size={16} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900">{it.title}</h3>
-                  <p className="mt-2 text-sm text-slate-600">{it.desc}</p>
+                  <h3 className="text-base font-semibold leading-tight text-text">{it.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-text-muted">{it.desc}</p>
                 </div>
               </div>
             </div>
@@ -44,3 +43,4 @@ export function WhyChoose() {
     </section>
   )
 }
+

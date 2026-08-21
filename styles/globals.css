@@ -5,16 +5,17 @@
 :root {
   color-scheme: light;
   font-family: var(--font-body), Inter, system-ui, sans-serif;
-  background-color: #FAFAF8;
-  color: #2D3748;
-  --background: #FAFAF8;
-  --surface: #FFFFFF;
-  --surface-muted: #EEF2F3;
-  --border: rgba(45, 55, 72, 0.12);
-  --primary: #234E70;
-  --accent: #F97316;
-  --text: #2D3748;
-  --success: #2F855A;
+  background-color: #F7F4EE;
+  color: #2A2A28;
+  --background: #F7F4EE;
+  --surface: #FDFBF7;
+  --surface-muted: #F5F0E8;
+  --border: rgba(42, 42, 40, 0.14);
+  --primary: #1E3A2D;
+  --accent: #A87A3B;
+  --text: #2A2A28;
+  --text-muted: #5C5A56;
+  --success: #4A6B4A;
 }
 
 html {
@@ -32,7 +33,7 @@ body {
 
 /* Improved focus styles for accessibility */
 :focus-visible {
-  outline: 3px solid rgba(249, 115, 22, 0.22);
+  outline: 3px solid rgba(168, 122, 59, 0.28);
   outline-offset: 2px;
 }
 
@@ -41,8 +42,8 @@ body {
 }
 
 ::selection {
-  background-color: rgba(249, 115, 22, 0.18);
-  color: #1f2937;
+  background-color: rgba(168, 122, 59, 0.2);
+  color: #2A2A28;
 }
 
 a {
@@ -80,26 +81,35 @@ select {
   }
 
   h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-heading), Cormorant Garamond, serif;
-    line-height: 1.05;
+    font-weight: 500;
+    line-height: 1.15;
+  }
+
+  h1 {
+    font-weight: 400;
   }
 }
 
 @layer utilities {
-  .bg-hero-glow {
-    background-image: radial-gradient(circle at top center, rgba(249, 115, 22, 0.14), transparent 34%), linear-gradient(180deg, #faf9f6 0%, #f6f5f2 100%);
-  }
-
   .container {
     margin-left: auto;
     margin-right: auto;
     max-width: 1120px;
     padding-left: 1.5rem;
     padding-right: 1.5rem;
+  }
+
+  .kicker {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #A87A3B;
   }
 }
