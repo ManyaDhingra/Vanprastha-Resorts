@@ -2,7 +2,7 @@
 
 **Purpose:** disk-backed session state so conversations stay short. Read this at session
 start; refresh it before ending any turn (or before compaction); never re-derive facts
-from old chat history. Last updated: 2026-08-19.
+from old chat history. Last updated: 2026-08-21.
 
 **How to use:** (1) session start → read this file. (2) Work. (3) At turn end / >65%
 context → update this file with deltas, keep it tight, end turn. Compaction summaries
@@ -14,13 +14,14 @@ carry only the delta since this file.
 
 | Item | Value |
 |---|---|
-| Server | PRODUCTION BUILD (`next start`) on `http://localhost:3000` — NEVER dev (dev OOMs with user's sde-lab procs) |
-| Latest log | `C:\Users\ItzP\AppData\Local\Temp\opencode\prod-server6.log` (restart after `.env` rewrite) |
-| Restart cmd | `$p=Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue; if($p){Stop-Process -Id $p.OwningProcess -Force}; Start-Sleep 1; Start-Process cmd -ArgumentList '/c','npm run start > <new log> 2>&1' -WorkingDirectory C:\Users\ItzP\Vanprastha-Resorts -WindowStyle Hidden; Start-Sleep 10` |
+| Server | PRODUCTION standalone (`node .next/standalone/server.js`) on `http://localhost:3000` — NEVER dev (dev OOMs with user's sde-lab procs) |
+| Latest log | `C:\Users\ItzP\AppData\Local\Temp\opencode\prod-noevents.log` (PID 12964) |
+| Restart cmd | `$p=Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue; if($p){Stop-Process -Id $p.OwningProcess -Force}; Start-Sleep 1; Start-Process cmd -ArgumentList '/c','node .next/standalone/server.js > <log> 2>&1' -WorkingDirectory C:\Users\ItzP\Vanprastha-Resorts -WindowStyle Hidden; Start-Sleep 5` — after builds also copy `public → .next/standalone/public` and `.next/static → .next/standalone/.next/static` |
 | `.env` has | DATABASE_URL, JWT_SECRET, admin creds (rotated — value in `.env` only), `RAZORPAY_WEBHOOK_SECRET` = generated (set), `RAZORPAY_KEY_ID/SECRET/NEXT_PUBLIC_*` = **EMPTY** (blocker) |
-| Git | `main` ahead of `origin/main` by **6** (`HEAD 8eba3e6` webhook round-3); working tree clean + untracked `docs/DESIGN-AUDIT-2026-08-19.md`; push needs owner approval |
-| Tests | vitest 84 (80 unit + 4 real-PG) · tsc clean · eslint clean · prod build green · e2e `scripts/verify-api.ps1` 22/22 |
-| Docker/GPU | none; Edge headless for screenshots (path in AGENTS.md playbook) |
+| Git | branch `feat/design-system-p0-ux` pushed to fork `iAMv1/Vanprastha-Resorts`; **PR #1 open** against `ManyaDhingra/main` (owner has not merged). Local `main` ahead of origin by 7 (unpushed — READ-only access). iAMv1 = READ on upstream, hence fork route |
+| Tests | vitest 84 · tsc clean · eslint clean · prod build green (29 routes) · e2e `scripts/verify-api.ps1` 22/22 |
+| Design state | P0 tokens DONE + committed (`e3e6e45`): pine #1E3A2D / brass #A87A3B / ivory #F7F4EE, Poppins dropped, logo/favicon recolored, WebP heroes, metadata, confirmation page, auth ?next= preservation, footer flex shell. Hero kept CENTERED per user preference (left-editorial attempt reverted). Events/Leaderboard sandbox leak purged (`29ea4fb`) |
+| Admin login | `/login` with creds from `.env` (ADMIN_EMAIL / ADMIN_PASSWORD) |
 
 ## 2. Payment simulation (OUTSIDE the repo by user request)
 
@@ -34,15 +35,17 @@ carry only the delta since this file.
 
 ## 3. Design elevation (user-requested; skill: agency-design-pipeline)
 
-- Full audit + art direction + roadmap: `docs/DESIGN-AUDIT-2026-08-19.md`. Godly.website mined; direction = pine/brass/ivory palette, Cormorant light editorial, kill `#F97316` orange + navy `#234E70`, drop Poppins, type-led hero, slim availability bar below fold.
-- Roadmap: **P0 tokens → P1 hero → P2 rooms editorial bento → P3 book flow + post-payment confirmation (VERIFY auth-interrupt state preservation + confirmation page existence) → P4/P5 token consistency**.
-- Every phase: build → Edge screenshot → vision-verify (no orange pixels, no template-centering, type intact) → critique rubric ≥13/16 → iterate; then `npm run build` + restart + `verify-api.ps1` to prove zero regression.
-- Next action: **P0** (palette/typography tokens, one PR). Do NOT touch payment/money code paths during design work.
+- Full audit + art direction + roadmap: `docs/DESIGN-AUDIT-2026-08-19.md`. Direction = pine/brass/ivory palette, Cormorant light editorial, kill `#F97316` orange + navy `#234E70`, drop Poppins.
+- **DONE & committed (`e3e6e45` + `29ea4fb`, in PR #1)**: P0 tokens, P3 confirmation page + auth `?next=` preservation, impeccable craft pass (kickers removed, de-carded WhyChoose, heading scale), token drift cleanup, SEO metadata, brass contrast fix, PNG→WebP, footer flex shell + pt-28 offsets, Events leak purge.
+- **User preference override**: hero stays CENTERED with floating rounded-[32px] booking card — left-editorial P1 attempt was reverted by user. Do NOT re-attempt without explicit ask.
+- Remaining OPTIONAL phases (not committed to): P2 rooms editorial bento, hero parallax motion. Only on user request.
+- Every phase: build → Edge screenshot → vision-verify → then `npm run build` + standalone restart + copy public/static into standalone + `verify-api.ps1` 22/22.
 
 ## 4. Blockers (in order)
 
-1. **Razorpay sandbox keys** (user action; dashboard, free, no website needed for test keys) → fill `.env` (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID` = same key id) → payment e2e + sim T6 live.
-2. **Push approval** (owner) → deploy checklist in `docs/STATUS.md` ("What is left"): standalone `node .next/standalone/server.js`, migrate deploy, seed (no admin rotate), HTTPS proxy, post-deploy smoke.
+1. **PR #1 review/merge** (owner ManyaDhingra) — https://github.com/ManyaDhingra/Vanprastha-Resorts/pull/1. After merge: delete fork `iAMv1/Vanprastha-Resorts`, fast-forward local main.
+2. **Razorpay sandbox keys** (user action; dashboard, free, no website needed for test keys) → fill `.env` (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID` = same key id) → payment e2e + sim T6 live.
+3. **Deploy** after merge+keys: checklist in `docs/STATUS.md` ("What is left"): standalone `node .next/standalone/server.js` (+ copy public & static into standalone), migrate deploy, seed (no admin rotate), HTTPS proxy, post-deploy smoke.
 
 ## 5. Windows script quirks (hard-won; apply to ANY new script)
 
