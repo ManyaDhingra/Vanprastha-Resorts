@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Bed, Calendar, CreditCard, Users, LogOut, Trophy } from 'lucide-react'
+import { Home, Bed, Calendar, CreditCard, Users, LogOut } from 'lucide-react'
 import { useAuth } from '@/components/auth/auth-provider'
 import { cn } from '@/lib/utils'
 
@@ -12,7 +12,6 @@ const items = [
   { label: 'Bookings', href: '/admin/bookings', icon: Calendar },
   { label: 'Payments', href: '/admin/payments', icon: CreditCard },
   { label: 'Users', href: '/admin/users', icon: Users },
-  { label: 'Events', href: '/admin/events', icon: Trophy },
 ]
 
 export function AdminSidebar() {
