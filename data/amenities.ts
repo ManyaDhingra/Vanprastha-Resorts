@@ -1,4 +1,4 @@
-import type { Amenity } from '@/types/api'
+import type { Amenity } from '@/lib/shared/content-types'
 
 export const amenities: Amenity[] = [
   {

@@ -1,41 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { verifyAdmin } from "@/lib/admin";
+import { prisma } from "@/lib/server/prisma";
+import { verifyAdmin } from "@/lib/server/admin";
+import { handleApiError } from "@/lib/server/errors";
 
+/**
+ * GET /api/admin/revenue — revenue + booking aggregates.
+ * Aggregate endpoint for the admin dashboard and future consumers
+ * (reports, exports, mobile clients).
+ */
 export async function GET(request: NextRequest) {
   try {
-    verifyAdmin(request);
+    await verifyAdmin(request);
 
     // Total revenue from successful payments
     const revenue = await prisma.payment.aggregate({
-      _sum: {
-        amount: true,
-      },
-      where: {
-        status: "SUCCESS",
-      },
+      _sum: { amount: true },
+      where: { status: "SUCCESS" },
     });
 
-    // Booking statistics
-    const totalBookings = await prisma.booking.count();
-
-    const confirmedBookings = await prisma.booking.count({
-      where: {
-        status: "CONFIRMED",
-      },
-    });
-
-    const pendingBookings = await prisma.booking.count({
-      where: {
-        status: "PENDING",
-      },
-    });
-
-    const cancelledBookings = await prisma.booking.count({
-      where: {
-        status: "CANCELLED",
-      },
-    });
+    const [totalBookings, confirmedBookings, pendingBookings, cancelledBookings] =
+      await Promise.all([
+        prisma.booking.count(),
+        prisma.booking.count({ where: { status: "CONFIRMED" } }),
+        prisma.booking.count({ where: { status: "PENDING" } }),
+        prisma.booking.count({ where: { status: "CANCELLED" } }),
+      ]);
 
     return NextResponse.json({
       totalRevenue: revenue._sum.amount ?? 0,
@@ -45,18 +34,6 @@ export async function GET(request: NextRequest) {
       cancelledBookings,
     });
   } catch (error) {
-    console.error(error);
-
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Internal Server Error",
-      },
-      {
-        status: 500,
-      }
-    );
+    return handleApiError(error);
   }
 }

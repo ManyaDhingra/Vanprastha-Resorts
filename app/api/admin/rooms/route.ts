@@ -1,82 +1,60 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { verifyAdmin } from "@/lib/admin";
+import { prisma } from "@/lib/server/prisma";
+import { verifyAdmin } from "@/lib/server/admin";
+import { roomSchema, intField } from "@/lib/server/room-schema";
+import { HttpError, handleApiError } from "@/lib/server/errors";
 
+/** GET /api/admin/rooms — all rooms, including inactive (admin view). */
+export async function GET(request: NextRequest) {
+  try {
+    await verifyAdmin(request);
+    const rooms = await prisma.room.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { _count: { select: { bookings: true } } },
+    });
+    return NextResponse.json(rooms);
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+/** POST /api/admin/rooms — create a room (validated). */
 export async function POST(request: NextRequest) {
   try {
-    verifyAdmin(request);
+    await verifyAdmin(request);
 
     const body = await request.json();
-
-    const {
-      slug,
-      title,
-      category,
-      description,
-      capacity,
-      size,
-      pricePerNight,
-      image,
-    } = body;
-
-    if (
-      !slug ||
-      !title ||
-      !category ||
-      !description ||
-      !capacity ||
-      !size ||
-      !pricePerNight ||
-      !image
-    ) {
-      return NextResponse.json(
-        { error: "All fields are required." },
-        { status: 400 }
-      );
-    }
-
-    const existingRoom = await prisma.room.findUnique({
-      where: {
-        slug,
-      },
+    const parsed = roomSchema.parse({
+      ...body,
+      capacity: intField(body?.capacity),
+      size: intField(body?.size),
+      pricePerNight: intField(body?.pricePerNight),
     });
 
+    const existingRoom = await prisma.room.findUnique({
+      where: { slug: parsed.slug },
+    });
     if (existingRoom) {
-      return NextResponse.json(
-        { error: "Room slug already exists." },
-        { status: 409 }
-      );
+      throw new HttpError(409, "A room with this slug already exists.");
     }
 
     const room = await prisma.room.create({
       data: {
-        slug,
-        title,
-        category,
-        description,
-        capacity: Number(capacity),
-        size: Number(size),
-        pricePerNight: Number(pricePerNight),
-        image,
+        slug: parsed.slug,
+        title: parsed.title,
+        category: parsed.category,
+        description: parsed.description,
+        capacity: parsed.capacity,
+        size: parsed.size,
+        pricePerNight: parsed.pricePerNight,
+        image: parsed.image,
+        highlights: parsed.highlights ?? [],
+        isActive: parsed.isActive ?? true,
       },
     });
 
-    return NextResponse.json(room, {
-      status: 201,
-    });
+    return NextResponse.json(room, { status: 201 });
   } catch (error) {
-    console.error(error);
-
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Internal Server Error",
-      },
-      {
-        status: 500,
-      }
-    );
+    return handleApiError(error);
   }
 }

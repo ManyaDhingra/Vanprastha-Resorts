@@ -1,4 +1,4 @@
-import type { Offer } from '@/types/api'
+import type { Offer } from '@/lib/shared/content-types'
 
 export const offers: Offer[] = [
   {

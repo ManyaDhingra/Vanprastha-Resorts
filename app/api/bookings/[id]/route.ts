@@ -1,207 +1,161 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/server/prisma";
+import { verifyToken, getAuthToken } from "@/lib/server/auth";
+import {
+  parseBookingDates,
+  calculateNights,
+  overlapWhere,
+  validateGuests,
+} from "@/lib/server/booking";
+import { HttpError, handleApiError } from "@/lib/server/errors";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+type Params = { params: Promise<{ id: string }> };
+
+async function loadOwnedBooking(id: string, userId: string) {
+  const booking = await prisma.booking.findUnique({
+    where: { id },
+    include: { room: true, payment: true },
+  });
+  if (!booking) {
+    throw new HttpError(404, "Booking not found.");
+  }
+  if (booking.userId !== userId) {
+    throw new HttpError(404, "Booking not found.");
+  }
+  return booking;
+}
+
+/** GET /api/bookings/:id — owner only. */
+export async function GET(request: NextRequest, { params }: Params) {
   try {
+    const decoded = verifyToken(getAuthToken(request));
     const { id } = await params;
-
-    const booking = await prisma.booking.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        room: true,
-        payment: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    if (!booking) {
-      return NextResponse.json(
-        {
-          error: "Booking not found",
-        },
-        {
-          status: 404,
-        }
-      );
-    }
-
+    const booking = await loadOwnedBooking(id, decoded.userId);
     return NextResponse.json(booking);
   } catch (error) {
-    console.error(error);
-
-    return NextResponse.json(
-      {
-        error: "Internal Server Error",
-      },
-      {
-        status: 500,
-      }
-    );
+    return handleApiError(error);
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+/**
+ * PUT /api/bookings/:id — owner only, and only while PENDING.
+ * CONFIRMED (paid) bookings are immutable by the user; CANCELLED cannot be
+ * revived. The server recomputes the amount so clients can never underpay.
+ */
+export async function PUT(request: NextRequest, { params }: Params) {
   try {
+    const decoded = verifyToken(getAuthToken(request));
     const { id } = await params;
 
-    const booking = await prisma.booking.findUnique({
-      where: {
-        id,
-      },
-    });
+    const booking = await loadOwnedBooking(id, decoded.userId);
 
-    if (!booking) {
-      return NextResponse.json(
-        {
-          error: "Booking not found",
-        },
-        {
-          status: 404,
-        }
+    if (booking.status !== "PENDING") {
+      throw new HttpError(
+        409,
+        booking.status === "CONFIRMED"
+          ? "Confirmed bookings cannot be modified. Contact support for changes."
+          : "Cancelled bookings cannot be modified."
       );
     }
-
-    const cancelledBooking = await prisma.booking.update({
-      where: {
-        id,
-      },
-      data: {
-        status: "CANCELLED",
-      },
-    });
-
-    return NextResponse.json(cancelledBooking);
-  } catch (error) {
-    console.error(error);
-
-    return NextResponse.json(
-      {
-        error: "Internal Server Error",
-      },
-      {
-        status: 500,
-      }
-    );
-  }
-}
-
-
-
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
 
     const body = await request.json();
+    const { checkIn, checkOut, guests } = body ?? {};
 
-    const { checkIn, checkOut, guests } = body;
-
-    const booking = await prisma.booking.findUnique({
-      where: { id },
-      include: {
-        room: true,
-      },
-    });
-
-    if (!booking) {
-      return NextResponse.json(
-        { error: "Booking not found" },
-        { status: 404 }
-      );
-    }
-
-    if (new Date(checkOut) <= new Date(checkIn)) {
-      return NextResponse.json(
-        { error: "Check-out must be after check-in." },
-        { status: 400 }
-      );
-    }
-
-    if (guests > booking.room.capacity) {
-      return NextResponse.json(
-        {
-          error: `Maximum ${booking.room.capacity} guests allowed.`,
-        },
-        { status: 400 }
-      );
-    }
-
-    const conflict = await prisma.booking.findFirst({
-      where: {
-        roomId: booking.roomId,
-        id: {
-          not: id,
-        },
-        status: {
-          not: "CANCELLED",
-        },
-        AND: [
-          {
-            checkIn: {
-              lt: new Date(checkOut),
-            },
-          },
-          {
-            checkOut: {
-              gt: new Date(checkIn),
-            },
-          },
-        ],
-      },
-    });
-
-    if (conflict) {
-      return NextResponse.json(
-        {
-          error: "Room already booked for these dates.",
-        },
-        { status: 409 }
-      );
-    }
-
-    const nights =
-      (new Date(checkOut).getTime() -
-        new Date(checkIn).getTime()) /
-      (1000 * 60 * 60 * 24);
-
-    const totalAmount =
-      nights * booking.room.pricePerNight;
-
-    const updatedBooking = await prisma.booking.update({
-      where: {
-        id,
-      },
-      data: {
-        checkIn: new Date(checkIn),
-        checkOut: new Date(checkOut),
-        guests,
-        totalAmount,
-      },
-    });
-
-    return NextResponse.json(updatedBooking);
-  } catch (error) {
-    console.error(error);
-
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
+    const { checkIn: inDate, checkOut: outDate } = parseBookingDates(
+      String(checkIn ?? ""),
+      String(checkOut ?? "")
     );
+
+    validateGuests(guests, booking.room.capacity);
+
+    if (!booking.room.isActive) {
+      throw new HttpError(409, "This room is no longer available.");
+    }
+
+    const nights = calculateNights(inDate, outDate);
+    const totalAmount = nights * booking.room.pricePerNight;
+
+    const conflicting = await prisma.booking.findFirst({
+      where: overlapWhere(booking.roomId, inDate, outDate, id),
+    });
+    if (conflicting) {
+      throw new HttpError(409, "Room is already booked for the selected dates.");
+    }
+
+    // Conditional write, atomic with the order-binding clear: the status is
+    // re-checked under the row lock (a concurrent sweep/admin-cancel cannot
+    // be revived by the stale read above), and the binding orphan happens in
+    // the same transaction — verify can never commit a payment against the
+    // old order between the two.
+    const updated = await prisma.$transaction(async (tx) => {
+      const updatedCount = await tx.booking.updateMany({
+        where: { id, status: "PENDING" },
+        data: {
+          checkIn: inDate,
+          checkOut: outDate,
+          guests: guests as number,
+          totalAmount,
+        },
+      });
+      if (updatedCount.count !== 1) {
+        throw new HttpError(409, "Booking is no longer awaiting payment.");
+      }
+      // The amount/dates changed: any order created for the old amount must
+      // not remain verifiable (a stale order would fail the live-amount
+      // assert in verify, but clearing the binding makes the failure early
+      // and clean — "create a new order"). Bound order ids are the only
+      // handle verification uses, so clearing them orphans the old Razorpay
+      // order safely.
+      await tx.payment.updateMany({
+        where: { bookingId: id, status: "PENDING" },
+        data: {
+          razorpayOrderId: null,
+          razorpayPaymentId: null,
+          razorpaySignature: null,
+        },
+      });
+      return tx.booking.findUnique({ where: { id } });
+    });
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+/**
+ * DELETE /api/bookings/:id — owner only; cancels (soft-delete) the booking.
+ * Only PENDING bookings can be cancelled by the user. Cancellation frees the
+ * dates immediately: the exclusion constraint only covers PENDING/CONFIRMED,
+ * so the room becomes bookable again.
+ */
+export async function DELETE(request: NextRequest, { params }: Params) {
+  try {
+    const decoded = verifyToken(getAuthToken(request));
+    const { id } = await params;
+
+    const booking = await loadOwnedBooking(id, decoded.userId);
+
+    if (booking.status !== "PENDING") {
+      throw new HttpError(
+        409,
+        booking.status === "CONFIRMED"
+          ? "Confirmed bookings cannot be cancelled online. Contact support."
+          : "Booking is already cancelled."
+      );
+    }
+
+    const cancelledCount = await prisma.booking.updateMany({
+      where: { id, status: "PENDING" },
+      data: { status: "CANCELLED" },
+    });
+    if (cancelledCount.count !== 1) {
+      throw new HttpError(409, "Booking is no longer awaiting payment.");
+    }
+    const cancelled = await prisma.booking.findUnique({ where: { id } });
+
+    return NextResponse.json(cancelled);
+  } catch (error) {
+    return handleApiError(error);
   }
 }

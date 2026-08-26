@@ -5,7 +5,7 @@ export function QuoteBanner() {
     <section className="py-16">
       <div className="mx-auto w-full max-w-[1400px] overflow-hidden rounded-3xl shadow-xl">
         <Image
-          src="/images/quote-banner.png"
+          src="/images/quote-banner.webp"
           alt="Quote banner"
           width={1400}
           height={700}

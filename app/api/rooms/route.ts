@@ -1,36 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { verifyAdmin } from "@/lib/admin";
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/server/prisma";
+import { handleApiError } from "@/lib/server/errors";
 
-export async function POST(request: NextRequest) {
-
+/**
+ * GET /api/rooms — public room catalog (active rooms only).
+ * Read paths on the public site are server-rendered (see /rooms page); this
+ * endpoint serves the client-side booking wizard, which needs a room list.
+ */
+export async function GET() {
   try {
-
-    verifyAdmin(request);
-
-    const body = await request.json();
-
-    const room = await prisma.room.create({
-
-      data: body,
-
+    const rooms = await prisma.room.findMany({
+      where: { isActive: true },
+      orderBy: { pricePerNight: "asc" },
     });
-
-    return NextResponse.json(room, {
-      status: 201,
-    });
-
+    return NextResponse.json(rooms);
   } catch (error) {
-
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal Server Error",
-      },
-      {
-        status: 500,
-      }
-    );
-
+    return handleApiError(error);
   }
-
 }
