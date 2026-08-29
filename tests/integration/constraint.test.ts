@@ -29,6 +29,7 @@ describe("bookings exclusion constraint (real Postgres)", () => {
         slug: `constraint-${suffix}`,
         title: "Constraint Test Room",
         category: "Test",
+        block: '',
         description: "room used only for exclusion-constraint verification",
         capacity: 2,
         size: 100,

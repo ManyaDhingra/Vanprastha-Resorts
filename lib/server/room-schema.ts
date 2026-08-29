@@ -29,6 +29,7 @@ export const roomSchema = z.object({
     ),
   highlights: z.array(z.string().min(1).max(200)).max(20).optional(),
   isActive: z.boolean().optional(),
+  blockId: z.string().nullable().optional(),
 });
 
 export type RoomInput = z.infer<typeof roomSchema>;

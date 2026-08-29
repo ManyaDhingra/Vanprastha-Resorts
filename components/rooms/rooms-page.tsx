@@ -6,15 +6,14 @@ import { RoomCard } from './room-card'
 import { RoomsFilters, type RoomFilters } from './rooms-filters'
 import { Pagination } from './pagination'
 import { SortSelect } from './sort-select'
-import type { RoomDto } from '@/lib/shared/types'
-import type { BlockDefinition } from '@/lib/shared/blocks'
+import type { RoomDto, BlockDto } from '@/lib/shared/types'
 
 /**
  * Client-side browsing over a server-provided room list: filters, sort and
  * pagination without any network round-trip. Data always comes from the DB
  * via the server component (app/rooms/page.tsx).
  *
- * When no block filter is active, shows the 4 block overview cards.
+ * When no block filter is active, shows the block overview cards.
  * When a block is selected, shows its individual rooms.
  */
 export function RoomsPageClient({
@@ -23,7 +22,7 @@ export function RoomsPageClient({
   initialBlock,
 }: {
   rooms: RoomDto[];
-  blocks: BlockDefinition[];
+  blocks: BlockDto[];
   initialBlock?: string;
 }) {
   const [selectedBlock, setSelectedBlock] = React.useState<string | null>(
@@ -38,7 +37,7 @@ export function RoomsPageClient({
     if (!selectedBlock) return []
     const block = blocks.find((b) => b.slug === selectedBlock)
     if (!block) return []
-    return rooms.filter((r) => r.block === block.id)
+    return rooms.filter((r) => r.blockId === block.id)
   }, [rooms, blocks, selectedBlock])
 
   const types = React.useMemo(

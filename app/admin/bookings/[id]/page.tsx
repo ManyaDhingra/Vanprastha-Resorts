@@ -25,6 +25,7 @@ interface BookingDetail {
     capacity: number
     size: number
     block: string | null
+    blockRelation: { id: string; name: string; slug: string } | null
   }
   user: {
     id: string
@@ -199,7 +200,7 @@ export default function BookingDetailPage() {
               </div>
               <div>
                 <p className="text-xs text-text-muted">Block</p>
-                <p className="text-text">{booking.room.block ?? '—'}</p>
+                <p className="text-text">{booking.room.blockRelation?.name ?? '—'}</p>
               </div>
               <div>
                 <p className="text-xs text-text-muted">Capacity</p>

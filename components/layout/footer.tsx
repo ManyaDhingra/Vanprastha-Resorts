@@ -37,7 +37,7 @@ export function Footer() {
               />
             </Link>
             <p className="max-w-xs text-sm leading-relaxed text-text-muted">
-              Vanaprastha is a composite word with the roots 'vana' meaning "forest, distant land", and 'prastha' meaning "going to, abiding in, journey to". The composite word literally means "retiring to forest".
+              Vanaprastha is a composite word with the roots &apos;vana&apos; meaning &quot;forest, distant land&quot;, and &apos;prastha&apos; meaning &quot;going to, abiding in, journey to&quot;. The composite word literally means &quot;retiring to forest&quot;.
             </p>
           </div>
 

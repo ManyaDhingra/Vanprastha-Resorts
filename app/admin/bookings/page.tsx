@@ -15,7 +15,7 @@ interface AdminBooking {
   status: string
   createdAt: string
   user: { name: string; email: string }
-  room: { title: string; category: string; block: string | null }
+  room: { title: string; category: string; blockRelation: { id: string; name: string; slug: string } | null }
   payment: { status: string; amount: number } | null
 }
 
@@ -162,7 +162,7 @@ export default function AdminBookings() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="text-text">{b.room.title}</div>
-                      <div className="text-xs text-text-muted">{b.room.block ?? b.room.category}</div>
+                      <div className="text-xs text-text-muted">{b.room.blockRelation?.name ?? b.room.category}</div>
                     </td>
                     <td className="px-4 py-3 text-text-muted">
                       {new Date(b.checkIn).toLocaleDateString('en-IN')}

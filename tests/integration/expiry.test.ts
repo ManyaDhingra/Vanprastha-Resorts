@@ -34,6 +34,7 @@ describe("expireStalePendingBookings (real Postgres)", () => {
         slug: `expiry-${suffix}`,
         title: "Expiry Test Room",
         category: "Test",
+        block: '',
         description: "sweep verification fixture",
         capacity: 2,
         size: 100,

@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         include: {
           room: {
-            select: { id: true, title: true, category: true, pricePerNight: true, block: true },
+            select: { id: true, title: true, category: true, pricePerNight: true, blockRelation: { select: { id: true, name: true, slug: true } } },
           },
           user: { select: { id: true, name: true, email: true } },
           payment: {

@@ -56,7 +56,7 @@ async function getStats() {
         status: { not: "CANCELLED" },
       },
       include: {
-        room: { select: { title: true, block: true } },
+        room: { select: { title: true, blockRelation: { select: { name: true } } } },
         user: { select: { name: true } },
       },
       orderBy: { createdAt: "asc" },
@@ -68,7 +68,7 @@ async function getStats() {
         status: { not: "CANCELLED" },
       },
       include: {
-        room: { select: { title: true, block: true } },
+        room: { select: { title: true, blockRelation: { select: { name: true } } } },
         user: { select: { name: true } },
       },
       orderBy: { createdAt: "asc" },

@@ -34,7 +34,7 @@ export default async function HomePage() {
       slug: true,
       title: true,
       category: true,
-      block: true,
+      blockId: true,
       description: true,
       capacity: true,
       size: true,

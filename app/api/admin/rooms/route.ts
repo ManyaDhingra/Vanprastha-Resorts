@@ -10,7 +10,10 @@ export async function GET(request: NextRequest) {
     await verifyAdmin(request);
     const rooms = await prisma.room.findMany({
       orderBy: { createdAt: "desc" },
-      include: { _count: { select: { bookings: true } } },
+      include: {
+        _count: { select: { bookings: true } },
+        blockRelation: { select: { id: true, name: true, slug: true } },
+      },
     });
     return NextResponse.json(rooms);
   } catch (error) {
@@ -38,11 +41,19 @@ export async function POST(request: NextRequest) {
       throw new HttpError(409, "A room with this slug already exists.");
     }
 
+    if (parsed.blockId) {
+      const block = await prisma.block.findUnique({ where: { id: parsed.blockId } });
+      if (!block) {
+        throw new HttpError(400, "Invalid block ID.");
+      }
+    }
+
     const room = await prisma.room.create({
       data: {
         slug: parsed.slug,
         title: parsed.title,
         category: parsed.category,
+        block: '',
         description: parsed.description,
         capacity: parsed.capacity,
         size: parsed.size,
@@ -50,6 +61,7 @@ export async function POST(request: NextRequest) {
         image: parsed.image,
         highlights: parsed.highlights ?? [],
         isActive: parsed.isActive ?? true,
+        blockId: parsed.blockId ?? null,
       },
     });
 

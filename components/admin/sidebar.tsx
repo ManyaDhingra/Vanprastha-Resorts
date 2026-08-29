@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Bed, Calendar, CreditCard, Users, LogOut } from 'lucide-react'
+import { Home, Bed, Building2, Calendar, CreditCard, Users, LogOut } from 'lucide-react'
 import { useAuth } from '@/components/auth/auth-provider'
 import { cn } from '@/lib/utils'
 
 const items = [
   { label: 'Dashboard', href: '/admin', icon: Home },
+  { label: 'Blocks', href: '/admin/blocks', icon: Building2 },
   { label: 'Rooms', href: '/admin/rooms', icon: Bed },
   { label: 'Bookings', href: '/admin/bookings', icon: Calendar },
   { label: 'Payments', href: '/admin/payments', icon: CreditCard },

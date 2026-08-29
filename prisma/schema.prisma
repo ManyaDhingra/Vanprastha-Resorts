@@ -21,12 +21,30 @@ model User {
   @@map("users")
 }
 
+model Block {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String
+  category      String
+  view          String
+  startingPrice Int
+  image         String
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  rooms         Room[]
+
+  @@map("blocks")
+}
+
 model Room {
   id            String    @id @default(cuid())
   slug          String    @unique
   title         String
   category      String
   block         String
+  blockId       String?
   description   String
   capacity      Int
   size          Int
@@ -40,7 +58,9 @@ model Room {
   /// records and must never be cascade-deleted (see onDelete: Restrict).
   isActive      Boolean   @default(true)
   bookings      Booking[]
+  blockRelation Block?    @relation(fields: [blockId], references: [id], onDelete: SetNull)
 
+  @@index([blockId])
   @@map("rooms")
 }
 

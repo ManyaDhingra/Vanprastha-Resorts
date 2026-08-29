@@ -36,6 +36,13 @@ export async function PUT(request: NextRequest, { params }: Params) {
       throw new HttpError(409, "A room with this slug already exists.");
     }
 
+    if (parsed.blockId) {
+      const block = await prisma.block.findUnique({ where: { id: parsed.blockId } });
+      if (!block) {
+        throw new HttpError(400, "Invalid block ID.");
+      }
+    }
+
     const updatedRoom = await prisma.room.update({
       where: { id },
       data: {
@@ -48,10 +55,8 @@ export async function PUT(request: NextRequest, { params }: Params) {
         pricePerNight: parsed.pricePerNight,
         image: parsed.image,
         highlights: parsed.highlights ?? [],
-        // Only touch isActive when the client actually sent it: a partial
-        // update (e.g. rename) must not silently re-activate a room an admin
-        // deliberately deactivated. undefined omits the field from the write.
         isActive: parsed.isActive ?? undefined,
+        blockId: parsed.blockId ?? null,
       },
     });
 

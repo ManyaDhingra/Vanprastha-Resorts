@@ -6,7 +6,6 @@ import { RoomSpecs } from '@/components/rooms/room-specs'
 import { BookingSidebar } from '@/components/rooms/booking-sidebar'
 import { RelatedRooms } from '@/components/rooms/related-rooms'
 import { BlockRoomsClient } from '@/components/rooms/block-rooms-client'
-import { getBlockBySlug } from '@/lib/shared/blocks'
 import { gallery } from '@/data/gallery'
 import { formatINR } from '@/lib/utils'
 
@@ -15,7 +14,7 @@ type RoomPageProps = { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: RoomPageProps): Promise<Metadata> {
   const { slug } = await params
 
-  const block = getBlockBySlug(slug)
+  const block = await prisma.block.findUnique({ where: { slug } })
   if (block) {
     return {
       title: `${block.name} — Vanprastha Resorts`,
@@ -33,10 +32,10 @@ export async function generateMetadata({ params }: RoomPageProps): Promise<Metad
 export default async function RoomPage({ params }: RoomPageProps) {
   const { slug } = await params
 
-  const block = getBlockBySlug(slug)
+  const block = await prisma.block.findUnique({ where: { slug } })
   if (block) {
     const rooms = await prisma.room.findMany({
-      where: { isActive: true, block: block.id },
+      where: { isActive: true, blockId: block.id },
       orderBy: { pricePerNight: 'asc' },
     })
     return <BlockRoomsClient rooms={rooms} block={block} />

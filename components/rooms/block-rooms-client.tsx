@@ -6,8 +6,7 @@ import { RoomCard } from './room-card'
 import { RoomsFilters, type RoomFilters } from './rooms-filters'
 import { Pagination } from './pagination'
 import { SortSelect } from './sort-select'
-import type { RoomDto } from '@/lib/shared/types'
-import type { BlockDefinition } from '@/lib/shared/blocks'
+import type { RoomDto, BlockDto } from '@/lib/shared/types'
 
 /**
  * Displays the individual rooms within a single block, with filtering and sorting.
@@ -17,7 +16,7 @@ export function BlockRoomsClient({
   block,
 }: {
   rooms: RoomDto[];
-  block: BlockDefinition;
+  block: BlockDto;
 }) {
   const [filters, setFilters] = React.useState<RoomFilters>({})
   const [sort, setSort] = React.useState('recommended')

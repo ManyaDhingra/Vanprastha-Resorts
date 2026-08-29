@@ -4,10 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { formatINR } from "@/lib/utils";
-import type { BlockDefinition } from "@/lib/shared/blocks";
+import type { BlockDto } from "@/lib/shared/types";
 
 interface Props {
-  blocks: BlockDefinition[];
+  blocks: BlockDto[];
 }
 
 export function BlockCards({ blocks }: Props) {

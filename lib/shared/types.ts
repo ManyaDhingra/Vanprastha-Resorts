@@ -5,7 +5,7 @@ export interface RoomDto {
   slug: string;
   title: string;
   category: string;
-  block: string;
+  blockId: string | null;
   description: string;
   capacity: number;
   size: number;
@@ -13,6 +13,19 @@ export interface RoomDto {
   image: string;
   highlights: string[];
   isActive: boolean;
+}
+
+export interface BlockDto {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  category: string;
+  view: string;
+  startingPrice: number;
+  image: string;
+  isActive: boolean;
+  roomCount?: number;
 }
 
 export interface BookingDto {

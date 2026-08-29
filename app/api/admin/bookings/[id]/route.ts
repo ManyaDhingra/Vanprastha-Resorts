@@ -26,6 +26,7 @@ export async function GET(request: NextRequest, { params }: Params) {
             capacity: true,
             size: true,
             block: true,
+            blockRelation: { select: { id: true, name: true, slug: true } },
           },
         },
         user: {

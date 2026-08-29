@@ -1,6 +1,10 @@
 /**
  * Room block definitions for the 4 accommodation blocks at Vanprastha Resorts.
  * Each block groups individual rooms by their physical building/location.
+ *
+ * NOTE: Block data is now stored in the database (Block model).
+ * This file is kept for backward compatibility only.
+ * Use the DB-driven BlockDto from lib/shared/types.ts for new code.
  */
 
 export interface BlockDefinition {

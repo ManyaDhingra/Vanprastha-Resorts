@@ -3,8 +3,13 @@
 import * as React from 'react'
 import Image from 'next/image'
 import { apiFetch, formatINR } from '@/lib/utils'
-import { BLOCKS, getBlockById } from '@/lib/shared/blocks'
 import { BedDouble, CheckCircle2, XCircle } from 'lucide-react'
+
+interface BlockInfo {
+  id: string
+  name: string
+  slug: string
+}
 
 interface AdminRoom {
   id: string
@@ -18,8 +23,21 @@ interface AdminRoom {
   image: string
   highlights: string[]
   isActive: boolean
-  block: string | null
+  blockId: string | null
+  blockRelation: BlockInfo | null
   _count: { bookings: number }
+}
+
+interface BlockSummary {
+  id: string
+  name: string
+  slug: string
+  roomCount: number
+  category: string
+  view: string
+  startingPrice: number
+  description: string
+  image: string
 }
 
 const EMPTY_FORM = {
@@ -32,12 +50,14 @@ const EMPTY_FORM = {
   pricePerNight: 12000,
   image: '',
   highlights: '',
+  blockId: '',
 }
 
 type FormState = typeof EMPTY_FORM
 
 export default function AdminRooms() {
   const [rooms, setRooms] = React.useState<AdminRoom[]>([])
+  const [blocks, setBlocks] = React.useState<BlockSummary[]>([])
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
   const [busy, setBusy] = React.useState<string | null>(null)
@@ -48,8 +68,11 @@ export default function AdminRooms() {
 
   const load = React.useCallback(() => {
     setLoading(true)
-    apiFetch<AdminRoom[]>('/api/admin/rooms')
-      .then(setRooms)
+    Promise.all([
+      apiFetch<AdminRoom[]>('/api/admin/rooms'),
+      apiFetch<BlockSummary[]>('/api/admin/blocks'),
+    ])
+      .then(([r, b]) => { setRooms(r); setBlocks(b) })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
   }, [])
@@ -76,6 +99,7 @@ export default function AdminRooms() {
           highlights: form.highlights
             ? form.highlights.split(',').map((s) => s.trim()).filter(Boolean)
             : undefined,
+          blockId: form.blockId || null,
         }),
       })
       setCreateOpen(false)
@@ -104,6 +128,7 @@ export default function AdminRooms() {
             ? editingForm.highlights.split(',').map((s) => s.trim()).filter(Boolean)
             : [],
           isActive: true,
+          blockId: editingForm.blockId || null,
         }),
       })
       setEditingId(null)
@@ -134,6 +159,7 @@ export default function AdminRooms() {
           image: room.image,
           highlights: room.highlights,
           isActive: !room.isActive,
+          blockId: room.blockId,
         }),
       })
       load()
@@ -177,6 +203,7 @@ export default function AdminRooms() {
       pricePerNight: room.pricePerNight,
       image: room.image,
       highlights: room.highlights.join(', '),
+      blockId: room.blockId ?? '',
     })
   }
 
@@ -227,6 +254,19 @@ export default function AdminRooms() {
               />
             </div>
           ))}
+          <div className="grid gap-1">
+            <label className="text-xs text-text-muted">Block</label>
+            <select
+              className={fieldCls}
+              value={form.blockId}
+              onChange={(e) => set('blockId', e.target.value, 'create')}
+            >
+              <option value="">No block</option>
+              {blocks.map((b) => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          </div>
           <div className="grid gap-1 sm:col-span-2">
             <label className="text-xs text-text-muted">Highlights (comma separated)</label>
             <input
@@ -265,8 +305,8 @@ export default function AdminRooms() {
         <>
           {/* Block Summary */}
           <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {BLOCKS.map((block) => {
-              const blockRooms = rooms.filter((r) => r.block === block.id)
+            {blocks.map((block) => {
+              const blockRooms = rooms.filter((r) => r.blockId === block.id)
               const activeCount = blockRooms.filter((r) => r.isActive).length
               return (
                 <div key={block.id} className="rounded-xl border border-border/60 bg-surface p-4 shadow-card">
@@ -294,14 +334,14 @@ export default function AdminRooms() {
           {(() => {
             const grouped = new Map<string, AdminRoom[]>()
             for (const room of rooms) {
-              const blockId = room.block ?? 'UNASSIGNED'
+              const blockId = room.blockId ?? 'UNASSIGNED'
               const list = grouped.get(blockId) ?? []
               list.push(room)
               grouped.set(blockId, list)
             }
 
             return Array.from(grouped.entries()).map(([blockId, blockRooms]) => {
-              const block = getBlockById(blockId)
+              const block = blocks.find((b) => b.id === blockId)
               return (
                 <div key={blockId} className="mb-6">
                   <h2 className="mb-3 font-heading text-lg font-semibold text-text">
@@ -338,6 +378,19 @@ export default function AdminRooms() {
                                 />
                               </div>
                             ))}
+                            <div className="grid gap-1">
+                              <label className="text-xs text-text-muted">Block</label>
+                              <select
+                                className={fieldCls}
+                                value={editingForm.blockId}
+                                onChange={(e) => set('blockId', e.target.value, 'edit')}
+                              >
+                                <option value="">No block</option>
+                                {blocks.map((b) => (
+                                  <option key={b.id} value={b.id}>{b.name}</option>
+                                ))}
+                              </select>
+                            </div>
                             <div className="grid gap-1 sm:col-span-2">
                               <label className="text-xs text-text-muted">Highlights</label>
                               <input

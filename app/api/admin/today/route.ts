@@ -25,7 +25,7 @@ export async function GET(request: Request) {
             status: { not: "CANCELLED" },
           },
           include: {
-            room: { select: { title: true, block: true } },
+            room: { select: { title: true, blockRelation: { select: { name: true } } } },
             user: { select: { name: true, email: true } },
           },
           orderBy: { createdAt: "asc" },
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
             status: { not: "CANCELLED" },
           },
           include: {
-            room: { select: { title: true, block: true } },
+            room: { select: { title: true, blockRelation: { select: { name: true } } } },
             user: { select: { name: true, email: true } },
           },
           orderBy: { createdAt: "asc" },
