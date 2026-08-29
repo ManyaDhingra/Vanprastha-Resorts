@@ -10,7 +10,7 @@ export function ExperiencesSection({ experiences }: Props) {
       <Container>
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="font-heading text-3xl font-normal leading-[1.15] text-text">Curated mountain experiences</h2>
-          <p className="mt-3 text-sm text-text-muted">Three ways to meet the valley</p>
+          <p className="mt-3 text-sm text-text-muted">Three ways to experience Vanprastha</p>
         </div>
 
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

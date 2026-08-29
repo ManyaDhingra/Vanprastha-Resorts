@@ -9,7 +9,7 @@ export function GallerySection({ items }: Props) {
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="font-heading text-3xl font-normal leading-[1.15] text-text">A visual journey</h2>
-          <p className="mt-3 text-sm text-text-muted">Stone, light, river — the resort in three frames</p>
+          <p className="mt-3 text-sm text-text-muted">Snow, mountains, gardens — Vanprastha in three frames</p>
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">

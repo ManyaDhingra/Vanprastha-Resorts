@@ -1,12 +1,12 @@
-<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="14" fill="#FDFBF7"/>
+  <path d="M12 50 L22 28 L28 38 L34 20 L42 36 L48 26 L52 50Z" fill="#1E3A2D"/>
+  <path d="M12 50 L22 28 L28 38 L34 20 L42 36 L48 26 L52 50Z" fill="url(#grad)" opacity="0.3"/>
   <defs>
-    <linearGradient id="g" x1="0" x2="1">
-      <stop offset="0%" stop-color="#1E3A2D" />
-      <stop offset="100%" stop-color="#152E22" />
+    <linearGradient id="grad" x1="12" y1="20" x2="52" y2="50">
+      <stop offset="0%" stop-color="#1E3A2D"/>
+      <stop offset="100%" stop-color="#152E22"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="14" fill="#FDFBF7" />
-  <path d="M10 48 L32 12 L54 48 Z" fill="url(#g)" />
-  <path d="M54 48 L34 48 L42 34 Z" fill="#2A2A28" opacity="0.08" />
-  <circle cx="48" cy="30" r="5" fill="#A87A3B" />
+  <circle cx="46" cy="22" r="4.5" fill="#A87A3B"/>
 </svg>

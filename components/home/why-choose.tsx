@@ -82,7 +82,7 @@ export function WhyChoose() {
           {/* Image */}
           <div className="relative h-72 w-full overflow-hidden rounded-2xl shadow-card sm:h-96 lg:h-[480px]">
             <Image
-              src="/images/about/placeholder.svg"
+              src="/images/about/about.png"
               alt="Vanprastha Resorts in the Dunagiri foothills"
               fill
               className="object-cover"

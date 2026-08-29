@@ -9,36 +9,6 @@ export const metadata: Metadata = {
     'Learn about Vanprastha Resorts, an eco-yoga retreat in the Dunagiri foothills of Uttarakhand, at the lotus feet of Mahavtar Babaji\'s Cave.',
 }
 
-/* ─── image placeholder ─────────────────────────────────────────── */
-
-function ImgPlaceholder({
-  alt,
-  className = '',
-  label,
-}: {
-  alt: string
-  className?: string
-  label?: string
-}) {
-  return (
-    <div
-      className={`relative flex items-center justify-center overflow-hidden rounded-xl bg-secondary ${className}`}
-    >
-      <Image
-        src="/images/about/placeholder.svg"
-        alt={alt}
-        fill
-        className="object-cover"
-      />
-      {label && (
-        <span className="absolute inset-0 flex items-center justify-center text-sm font-medium text-text-muted/60">
-          {label}
-        </span>
-      )}
-    </div>
-  )
-}
-
 /* ─── data ───────────────────────────────────────────────────────── */
 
 const ashramStages = [
@@ -72,7 +42,7 @@ const destinations = [
     distance: '1.5 km from the resort',
     content:
       'This cave is one of the most spiritual caves in the Himalayan region. It is the origin of Kriya Yoga where Yoga Guru Sri Lahiri Mahasay received Kriya Yoga teachings directly from Sri Sri Mahavataar Babaji.\n\nEveryday many pilgrims and Kriya Yogis that follow different gurus visit the cave.\n\nTo understand the historical significance of the cave, it is suggested that devotees read Chapter 34 \u201cMaterialising a Palace in the Himalayas\u201d from the Autobiography of a Yogi, and \u201cA Blessing from Mahavataar Babaji\u201d from Only Love by Sri Sri Daya Mata.\n\nThe cave area is the place where Babaji initiated Lahiri Mahasaya in 1861 and is the birth of Kriya Yoga in this Dwapara Yuga.\n\nHoly Cave of Mahavatar Babaji is situated just 1.5 km away from the resort. Guide, trek route and other assistance is provided by the resort.',
-    image: '/images/about/babaji-cave.jpg',
+    image: '/images/about/babaji_cave.webp',
   },
   {
     id: 'pandukholi',
@@ -81,7 +51,7 @@ const destinations = [
     distance: '3 km from the resort',
     content:
       'This cave is believed to have been one of the shelters of the Pandavas, the sons of Pandu during the 1-year \u2018Agyatvas\u2019 after their 14-year exile as mentioned in the Mahabharata.\n\nThe name Pandukholi is also derived from the legend, \u2018Pandu\u2019 meaning the sons of Pandu that is Pandav and \u2018kholi\u2019 meaning shelter.\n\nPandukholi is about 3 Km away from the resort.',
-    image: '/images/about/pandukholi.jpg',
+    image: '/images/about/Pandukholi-2.webp',
   },
   {
     id: 'dunagiri',
@@ -90,7 +60,7 @@ const destinations = [
     distance: '6 km from the resort',
     content:
       'Dunagiri Temple is a famous temple of the Hindus, situated at a distance of 6 km from the resort.\n\nThis temple is situated on the top of Drona Mountain. Dunagiri is also known as Dronagiri. The mountain is associated with Dronacharya, a Guru (Teacher) of the Pandavas.\n\nThe temple is one of the oldest and Siddha Shaktipeeth temples in Uttarakhand. Maa Dunagiri Temple is considered the second Vaishno Shaktipeeth in the Kumaon region after Vaishno Devi.\n\nThe temple is situated at an altitude of approximately 8,000 feet above sea level. The road leads to the temple by approximately 365 stairs. The stairs are covered, and thousands of bells are hanging along the way.\n\nThe maintenance work of the Dunagiri Temple is done by the \u2018Aadi Shakti Maa Dunagiri Mandir Trust\u2019. Daily bhandara are organised by the Trust in the Dunagiri Temple.\n\nThe full range of Himalayan mountains can be seen from the Dunagiri Temple.',
-    image: '/images/about/dunagiri-temple.jpg',
+    image: '/images/about/Dunagiri-Temple-1-1-1.webp',
   },
   {
     id: 'kausani',
@@ -99,7 +69,7 @@ const destinations = [
     distance: 'Approximately 90 minutes from the resort',
     content:
       'Kausani is a hill station and village situated in Bageshwar district in the state of Uttarakhand, India.\n\nIt is approximately 90 minutes away from the resort. It is famous for its scenic splendour and its spectacular panoramic view of Himalayan peaks like Trisul, Nanda Devi and Panchachuli.\n\nMahatma Gandhi called this place the \u201cSwitzerland of India\u201d, due to the similarity in landscapes.',
-    image: '/images/about/kausani.jpg',
+    image: '/images/about/kausani.webp',
   },
   {
     id: 'kainchi',
@@ -108,7 +78,7 @@ const destinations = [
     distance: '',
     content:
       'Kainchi Dham is so much more than just being a temple or place of the saint.\n\nIt is the dham associated with Neem Karoli Maharaj.\n\nThe destination is located on the way to Dunagiri from Pant Nagar airport or Kathgodam railway station.',
-    image: '/images/about/kainchi-dham.jpg',
+    image: '/images/about/kausani.webp',
   },
 ]
 
@@ -121,7 +91,7 @@ export default function AboutPage() {
       <section className="relative overflow-hidden bg-primary py-24 sm:py-32">
         <div className="absolute inset-0">
           <Image
-            src="/images/about/hero.jpg"
+            src="/images/about/about.png"
             alt=""
             fill
             className="object-cover opacity-30"
@@ -268,11 +238,14 @@ export default function AboutPage() {
                 </p>
               </div>
             </div>
-            <ImgPlaceholder
-              alt="Experience Vanprastha"
-              label="Experience Vanprastha image"
-              className="h-72 w-full sm:h-96 lg:h-[480px]"
-            />
+            <div className="relative h-72 w-full overflow-hidden rounded-xl sm:h-96 lg:h-[480px]">
+              <Image
+                src="/images/experience-1.jpg"
+                alt="Experience Vanprastha"
+                fill
+                className="object-cover"
+              />
+            </div>
           </div>
         </Container>
       </section>
@@ -281,12 +254,15 @@ export default function AboutPage() {
       <section className="bg-secondary py-16">
         <Container>
           <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-            <ImgPlaceholder
-              alt="The Resort"
-              label="Resort image"
-              className="h-72 w-full order-2 lg:order-1 sm:h-96 lg:h-[480px]"
-            />
-            <div className="order-1 lg:order-2">
+            <div className="relative h-72 w-full order-2 overflow-hidden rounded-xl sm:h-96 lg:h-[480px] lg:order-2">
+              <Image
+                src="/images/about/1.jpg"
+                alt="The Resort"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="order-1 lg:order-1">
               <p className="kicker">The resort</p>
               <h2 className="mt-3 font-heading text-3xl font-normal leading-[1.15] text-text">
                 The Resort
@@ -405,13 +381,18 @@ export default function AboutPage() {
                     ))}
                   </div>
                 </div>
-                <ImgPlaceholder
-                  alt={d.title}
-                  label={`${d.title} image`}
-                  className={`h-64 w-full sm:h-80 lg:h-96 ${
+                <div
+                  className={`relative h-64 w-full overflow-hidden rounded-xl sm:h-80 lg:h-96 ${
                     i % 2 === 0 ? 'order-1 lg:order-2' : 'order-1'
                   }`}
-                />
+                >
+                  <Image
+                    src={d.image}
+                    alt={d.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
               </article>
             ))}
           </div>

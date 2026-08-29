@@ -2,27 +2,27 @@ import type { Experience } from '@/lib/shared/content-types'
 
 export const experiences: Experience[] = [
   {
-    id: 'sunrise-yoga',
-    name: 'Sunrise Mountain Yoga',
-    description: 'Begin the day with gentle mountain yoga, breathwork and sunrise views over the river valley.',
-    duration: '75 minutes',
-    intensity: 'Gentle',
+    id: 'winter-himalayas',
+    name: 'Winter in the Himalayas',
+    description: 'Wake to a serene Himalayan landscape transformed by snow, with the resort surrounded by quiet forests and mountain views.',
+    duration: 'Seasonal',
+    intensity: 'Peaceful',
     image: '/images/experience-1.jpg'
   },
   {
-    id: 'river-cruise',
-    name: 'River Heritage Cruise',
-    description: 'A quiet boat journey through the valley with stories of local traditions and hillside tea stops.',
-    duration: '2 hours',
+    id: 'moments-together',
+    name: 'Moments Together',
+    description: 'Share meaningful moments with fellow travellers amidst the warmth of Vanprastha\'s wooden spaces and Himalayan surroundings.',
+    duration: 'Flexible',
     intensity: 'Leisurely',
     image: '/images/experience-2.jpg'
   },
   {
-    id: 'forest-walk',
-    name: 'Guided Forest Walk',
-    description: 'A guided walk through cedar groves with a naturalist who explains mountain flora and the resort’s herbal gardens.',
-    duration: '90 minutes',
-    intensity: 'Moderate',
+    id: 'meditation-stillness',
+    name: 'Meditation & Inner Stillness',
+    description: 'Find a quiet space for meditation, reflection and spiritual practice in the peaceful surroundings of Vanprastha.',
+    duration: 'Flexible',
+    intensity: 'Restorative',
     image: '/images/experience-3.jpg'
   }
 ]

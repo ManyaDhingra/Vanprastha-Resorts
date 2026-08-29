@@ -2,21 +2,21 @@ import type { GalleryItem } from '@/lib/shared/content-types'
 
 export const gallery: GalleryItem[] = [
   {
-    id: 'river-gaze',
-    title: 'River Gaze Pavilion',
+    id: 'snowfall-cottages',
+    title: 'Snowfall Cottages',
     image: '/images/gallery/1.jpg',
-    caption: 'A serene river-front pavilion with a subtle warm palette and flowing natural light.'
+    caption: 'Wooden cottages resting beneath a quiet Himalayan snowfall, surrounded by the peaceful landscape of Dunagiri.'
   },
   {
-    id: 'spa-sanctuary',
-    title: 'Spa Sanctuary',
+    id: 'mountain-terrace',
+    title: 'Mountain Terrace',
     image: '/images/gallery/2.jpg',
-    caption: 'The spa features calming stone baths, private treatment suites and Himalayan herb therapies.'
+    caption: 'An open terrace overlooking the forested Himalayan slopes, offering expansive mountain views and a tranquil place to pause.'
   },
   {
-    id: 'sunset-terrace',
-    title: 'Sunset Terrace',
+    id: 'garden-terrace',
+    title: 'Garden Terrace',
     image: '/images/gallery/3.jpg',
-    caption: 'Ample terrace seating with unobstructed views of the forest canopy and mountain horizon.'
+    caption: 'A sunlit garden terrace framed by flowering plants, hanging planters and uninterrupted views of the surrounding mountains.'
   }
 ]
