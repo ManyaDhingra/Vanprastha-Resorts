@@ -25,9 +25,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<User | null>(null)
   const [token, setToken] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(true)
+  const restoreRef = React.useRef<AbortController | null>(null)
 
   // Restore the session from storage, then validate it against the server.
   // A stored but expired/forged token is rejected and cleared.
+  // The round-trip is time-bounded: a hung request (dead socket, stalled DB
+  // connection) must never leave `loading` stuck and strand gated pages.
   React.useEffect(() => {
     let mounted = true
     // Same storage key the API layer uses (single source — no third literal).
@@ -38,21 +41,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setToken(t)
 
-    apiFetch<{ user: User }>('/api/auth/me')
+    const controller = new AbortController()
+    restoreRef.current = controller
+
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
+    const timeout = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error('restore-timeout')), 8000)
+    })
+
+    Promise.race([apiFetch<{ user: User }>('/api/auth/me', { signal: controller.signal }), timeout])
       .then((data) => {
-        if (!mounted) return
+        if (!mounted || controller.signal.aborted) return
         setUser(data.user)
         storeSession(t, data.user)
       })
-      .catch(() => {
-        if (!mounted) return
+      .catch((err: unknown) => {
+        if (!mounted || controller.signal.aborted) return
         setUser(null)
         setToken(null)
-        clearStoredSession()
+        // A timed-out check says nothing about token validity — keep it so
+        // the next navigation can retry. Real failures clear the session.
+        if (!(err instanceof Error && (err.message === 'restore-timeout' || err.name === 'AbortError'))) {
+          clearStoredSession()
+        }
       })
-      .finally(() => mounted && setLoading(false))
+      .finally(() => {
+        if (mounted && !controller.signal.aborted) setLoading(false)
+      })
 
-    return () => { mounted = false }
+    return () => {
+      mounted = false
+      controller.abort()
+      if (timeoutId) clearTimeout(timeoutId)
+    }
   }, [])
 
   async function applyAuth(data: { token: string; user: User }) {
@@ -63,6 +84,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function login(email: string, password: string) {
+    restoreRef.current?.abort()
+    setLoading(false)
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -76,6 +99,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function register(name: string, email: string, password: string) {
+    restoreRef.current?.abort()
+    setLoading(false)
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

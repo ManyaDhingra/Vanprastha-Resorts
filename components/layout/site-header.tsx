@@ -12,15 +12,23 @@ import { cn } from '@/lib/utils'
 
 const navigation = [
   { label: 'Home', href: '/' },
+  { label: 'About', href: '/#about' },
+  { label: 'Activities', href: '/activities' },
+  { label: 'Contact', href: '/#contact' },
   { label: 'Rooms', href: '/rooms' },
-  { label: 'Book', href: '/book' },
+  { label: 'Book Now', href: '/book' },
 ]
 
 export function SiteHeader() {
   const pathname = usePathname()
-  const { user, loading: authLoading, logout } = useAuth()
+  const { user, logout } = useAuth()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+
+  // The transparent/white variant is only legible over the homepage hero.
+  // Every other route renders on an ivory background, so force the solid
+  // surface style there immediately instead of waiting for scroll.
+  const solid = scrolled || pathname !== '/'
 
   const close = useCallback(() => setOpen(false), [])
 
@@ -44,7 +52,11 @@ export function SiteHeader() {
   // Close the drawer on route change.
   useEffect(() => close(), [pathname, close])
 
-  const authAction = authLoading ? null : user ? (
+  // While the session restore is in flight there is no user yet, so the
+  // logged-out controls stay visible (a returning logged-in visitor sees a
+  // brief flash of them before their chip replaces it) — the auth navigation
+  // never blanks out, even if /api/auth/me is slow.
+  const authAction = user ? (
     <div className="flex items-center gap-3">
       <Link
         href={user.role === 'ADMIN' ? '/admin' : '/profile'}
@@ -59,29 +71,46 @@ export function SiteHeader() {
         aria-label="Log out"
         className={cn(
           'rounded-full p-2 transition',
-          scrolled ? 'text-text-muted hover:bg-secondary' : 'text-white/90 hover:bg-surface/10'
+          solid ? 'text-text-muted hover:bg-secondary' : 'text-white/90 hover:bg-surface/10'
         )}
       >
         <LogOut size={18} />
       </button>
     </div>
   ) : (
-    <div className="hidden items-center gap-2 md:flex">
-      <Link
-        href="/login"
-        className={cn(
-          'rounded-full px-4 py-2 text-sm font-medium transition',
-          scrolled
-            ? 'text-text hover:bg-secondary'
-            : 'text-white hover:bg-surface/10'
-        )}
-      >
-        Log in
-      </Link>
-      <Button asChild>
-        <Link href="/register">Sign up</Link>
-      </Button>
-    </div>
+    <>
+      <div className="hidden items-center gap-2 md:flex">
+        <Link
+          href="/login"
+          className={cn(
+            'rounded-full px-4 py-2 text-sm font-medium transition',
+            solid
+              ? 'text-text hover:bg-secondary'
+              : 'text-white hover:bg-surface/10'
+          )}
+        >
+          Sign In
+        </Link>
+        <Button asChild>
+          <Link href="/register">Sign up</Link>
+        </Button>
+      </div>
+      {/* Compact direct entry point on small screens: the drawer still has
+          both links, but Sign In no longer requires discovering the menu. */}
+      {!open && (
+        <Link
+          href="/login"
+          className={cn(
+            'rounded-full px-3 py-1.5 text-sm font-medium transition md:hidden',
+            solid
+              ? 'text-text hover:bg-secondary'
+              : 'text-white hover:bg-surface/10'
+          )}
+        >
+          Sign In
+        </Link>
+      )}
+    </>
   )
 
   return (
@@ -89,19 +118,29 @@ export function SiteHeader() {
       className={cn(
         'fixed inset-x-0 top-0 z-40 transition-all duration-300 ease-in-out',
         'backdrop-blur-md',
-        scrolled
+        solid
           ? 'bg-surface/95 border-b border-border/70 shadow-sm'
           : 'bg-transparent'
       )}
     >
-      <div className={cn('absolute inset-x-0 top-0 h-24 transition-opacity duration-300', scrolled ? 'opacity-0' : 'opacity-100')}>
+      <div className={cn('pointer-events-none absolute inset-x-0 top-0 h-24 transition-opacity duration-300', solid ? 'opacity-0' : 'opacity-100')}>
         <div className="h-full bg-gradient-to-b from-black/30 to-transparent" />
       </div>
 
       <div className="relative mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <div className="flex items-center gap-4">
-          <Link href="/" aria-label="Vanprastha Resorts">
-            <Image src="/images/logo-vanprastha.svg" alt="Vanprastha Resorts" width={160} height={48} priority />
+          {/* SVG has no viewBox (intrinsic 512×487): render at natural size
+              inside a small box and scale uniformly so the whole mark stays
+              visible with the correct aspect ratio. */}
+          <Link href="/" aria-label="Vanprastha Resorts" className="relative block h-10 w-[38px] shrink-0 md:h-11 md:w-[42px]">
+            <Image
+              src="/images/logo-vanprastha.svg"
+              alt=""
+              width={512}
+              height={487}
+              priority
+              className="absolute left-0 top-0 max-w-none origin-top-left scale-[0.0781] md:scale-[0.0859]"
+            />
           </Link>
         </div>
 
@@ -112,7 +151,7 @@ export function SiteHeader() {
               href={item.href}
               className={cn(
                 'text-sm font-medium transition-colors duration-300',
-                scrolled ? 'text-text hover:text-text' : 'text-white/95 hover:text-white',
+                solid ? 'text-text hover:text-text' : 'text-white/95 hover:text-white',
                 pathname === item.href ? 'border-b-2 border-accent pb-1' : ''
               )}
             >
@@ -124,7 +163,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-3">
           {authAction}
           <button
-            className={cn('md:hidden inline-flex items-center justify-center rounded-lg p-2 transition', scrolled ? 'text-text' : 'text-white')}
+            className={cn('md:hidden inline-flex items-center justify-center rounded-lg p-2 transition', solid ? 'text-text' : 'text-white')}
             onClick={() => setOpen(true)}
             aria-label="Open menu"
             aria-expanded={open}
@@ -153,8 +192,14 @@ export function SiteHeader() {
               aria-label="Menu"
             >
               <div className="flex items-center justify-between">
-                <Link href="/" onClick={close}>
-                  <Image src="/images/logo-vanprastha.svg" alt="Vanprastha Resorts" width={140} height={40} />
+                <Link href="/" onClick={close} aria-label="Vanprastha Resorts" className="relative block h-9 w-[35px]">
+                  <Image
+                    src="/images/logo-vanprastha.svg"
+                    alt=""
+                    width={512}
+                    height={487}
+                    className="absolute left-0 top-0 max-w-none origin-top-left scale-[0.0703]"
+                  />
                 </Link>
                 <button aria-label="Close menu" onClick={close} className="rounded p-2">
                   <X size={20} />
@@ -187,7 +232,7 @@ export function SiteHeader() {
                 ) : (
                   <>
                     <Link href="/login" onClick={close} className="text-base font-medium text-text">
-                      Log in
+                      Sign In
                     </Link>
                     <Link href="/register" onClick={close} className="text-base font-medium text-text">
                       Sign up

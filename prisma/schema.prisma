@@ -7,6 +7,81 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  password  String
+  phone     String?
+  role      UserRole  @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+
+  @@map("users")
+}
+
+model Room {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  title         String
+  category      String
+  block         String
+  description   String
+  capacity      Int
+  size          Int
+  pricePerNight Int
+  image         String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  /// Marketing bullet points shown on the public detail page.
+  highlights    String[]  @default([])
+  /// Soft-hide rooms instead of deleting them: bookings are financial
+  /// records and must never be cascade-deleted (see onDelete: Restrict).
+  isActive      Boolean   @default(true)
+  bookings      Booking[]
+
+  @@map("rooms")
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  userId      String
+  roomId      String
+  checkIn     DateTime
+  checkOut    DateTime
+  guests      Int
+  totalAmount Int
+  status      BookingStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  room        Room          @relation(fields: [roomId], references: [id])
+  user        User          @relation(fields: [userId], references: [id])
+  payment     Payment?
+
+  @@index([userId, createdAt])
+  @@index([roomId])
+  @@index([status, createdAt])
+  @@map("bookings")
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  bookingId         String        @unique
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  razorpaySignature String?
+  amount            Int
+  status            PaymentStatus @default(PENDING)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  /// Razorpay refund id (set when a captured payment is refunded).
+  refundId          String?
+  booking           Booking       @relation(fields: [bookingId], references: [id])
+
+  @@map("payments")
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -23,99 +98,4 @@ enum PaymentStatus {
   SUCCESS
   FAILED
   REFUNDED
-}
-
-model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  phone     String?
-  role      UserRole @default(USER)
-
-  bookings  Booking[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("users")
-}
-
-model Room {
-  id            String   @id @default(cuid())
-  slug          String   @unique
-  title         String
-  category      String
-  description   String
-  capacity      Int
-  size          Int
-  pricePerNight Int
-  image         String
-  /// Marketing bullet points shown on the public detail page.
-  highlights    String[] @default([])
-  /// Soft-hide rooms instead of deleting them: bookings are financial
-  /// records and must never be cascade-deleted (see onDelete: Restrict).
-  isActive      Boolean  @default(true)
-
-  bookings      Booking[]
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@map("rooms")
-}
-
-model Booking {
-  id          String         @id @default(cuid())
-
-  userId      String
-  roomId      String
-
-  // Restrict: bookings are immutable financial records. A room with booking
-  // history can only be deactivated, never deleted; a user with bookings can
-  // never be deleted. Guards against silent data loss.
-  user        User           @relation(fields: [userId], references: [id], onDelete: Restrict)
-  room        Room           @relation(fields: [roomId], references: [id], onDelete: Restrict)
-
-  checkIn     DateTime
-  checkOut    DateTime
-
-  guests      Int
-  totalAmount Int
-
-  status      BookingStatus  @default(PENDING)
-
-  payment     Payment?
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Query paths that run per user, per room inventory, and the expiry sweep;
-  // declared here (single source) so migrations and schema can never drift.
-  @@index([userId, createdAt])
-  @@index([roomId])
-  @@index([status, createdAt])
-
-  @@map("bookings")
-}
-
-model Payment {
-  id                 String        @id @default(cuid())
-
-  bookingId          String        @unique
-  booking            Booking       @relation(fields: [bookingId], references: [id], onDelete: Restrict)
-
-  razorpayOrderId    String?
-  razorpayPaymentId  String?
-  razorpaySignature  String?
-  /// Razorpay refund id (set when a captured payment is refunded).
-  refundId           String?
-
-  amount             Int
-  status             PaymentStatus @default(PENDING)
-
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-
-  @@map("payments")
 }

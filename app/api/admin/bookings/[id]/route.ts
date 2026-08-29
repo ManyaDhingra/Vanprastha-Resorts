@@ -6,6 +6,56 @@ import { HttpError, handleApiError } from "@/lib/server/errors";
 type Params = { params: Promise<{ id: string }> };
 
 /**
+ * GET /api/admin/bookings/:id — full booking details for admin view.
+ */
+export async function GET(request: NextRequest, { params }: Params) {
+  try {
+    await verifyAdmin(request);
+    const { id } = await params;
+
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        room: {
+          select: {
+            id: true,
+            title: true,
+            category: true,
+            slug: true,
+            pricePerNight: true,
+            capacity: true,
+            size: true,
+            block: true,
+          },
+        },
+        user: {
+          select: { id: true, name: true, email: true, phone: true },
+        },
+        payment: {
+          select: {
+            id: true,
+            amount: true,
+            status: true,
+            razorpayOrderId: true,
+            razorpayPaymentId: true,
+            refundId: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      throw new HttpError(404, "Booking not found.");
+    }
+
+    return NextResponse.json(booking);
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+/**
  * PATCH /api/admin/bookings/:id — admin cancellation (H2).
  * Operators need a first-class way to release inventory held by abandoned
  * PENDING reservations. Only PENDING → CANCELLED is allowed here; CONFIRMED

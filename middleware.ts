@@ -12,14 +12,17 @@ import { TOKEN_COOKIE } from "@/lib/utils";
  * DB role re-check), which makes the admin page gate honest instead of a
  * fail-closed dead end (see audit finding C2).
  */
-const SECURITY_HEADERS = {
+const isDev = process.env.NODE_ENV === "development";
+
+const SECURITY_HEADERS: Record<string, string> = {
   "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   "Content-Security-Policy": [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com",
+    // Next.js dev React Refresh / HMR uses eval() — only allow in development.
+    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://checkout.razorpay.com`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self' data:",

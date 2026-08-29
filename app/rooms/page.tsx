@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/server/prisma";
 import { RoomsPageClient } from "@/components/rooms/rooms-page";
+import { BLOCKS } from "@/lib/shared/blocks";
 
 export const dynamic = "force-dynamic";
 
@@ -16,5 +17,5 @@ export default async function RoomsPage() {
     orderBy: { pricePerNight: "asc" },
   });
 
-  return <RoomsPageClient rooms={rooms} />;
+  return <RoomsPageClient rooms={rooms} blocks={BLOCKS} />;
 }

@@ -5,6 +5,7 @@ export interface RoomDto {
   slug: string;
   title: string;
   category: string;
+  block: string;
   description: string;
   capacity: number;
   size: number;

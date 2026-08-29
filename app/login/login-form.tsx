@@ -24,8 +24,11 @@ export default function LoginForm() {
   const [error, setError] = React.useState<string | null>(null)
   const [submitting, setSubmitting] = React.useState(false)
 
+  // Session restore runs in the background; the form is ALWAYS rendered so
+  // a hung/slow /api/auth/me can never strand the page on "Loading…".
+  // Redirect happens only once restoration has actually settled.
   React.useEffect(() => {
-    if (!authLoading && user) router.replace(next ?? '/')
+    if (!authLoading && user) router.replace(next ?? (user.role === 'ADMIN' ? '/admin' : '/'))
   }, [authLoading, user, router, next])
 
   const submit = async (e: React.FormEvent) => {
@@ -42,14 +45,6 @@ export default function LoginForm() {
     } finally {
       setSubmitting(false)
     }
-  }
-
-  if (authLoading) {
-    return (
-      <main className="pt-28 pb-12">
-        <div className="mx-auto max-w-md px-6 text-sm text-text-muted">Loading…</div>
-      </main>
-    )
   }
 
   return (

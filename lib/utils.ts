@@ -87,9 +87,12 @@ export async function apiFetch<T = unknown>(
   const res = await fetch(url, { ...options, headers })
 
   if (res.status === 401) {
-    clearStoredSession()
-    if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-      window.location.href = '/login'
+    const currentToken = getStoredToken()
+    if (currentToken && currentToken === token) {
+      clearStoredSession()
+      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
     }
     throw new Error('Session expired. Please log in again.')
   }

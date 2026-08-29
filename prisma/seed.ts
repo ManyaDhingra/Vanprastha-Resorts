@@ -7,6 +7,7 @@ type SeedRoom = {
   slug: string;
   title: string;
   category: string;
+  block: string;
   description: string;
   capacity: number;
   size: number;
@@ -50,29 +51,29 @@ const HIGHLIGHTS: Record<string, string[]> = {
 
 const ROOMS: SeedRoom[] = [
   // ASHTANGA YOGA BLOCK
-  { slug: "yama", title: "Yama", category: "Executive Room | Valley/Mountain View", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/yama.jpg", highlights: [] },
-  { slug: "niyama", title: "Niyama", category: "Executive Room | Valley/Mountain View", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/niyama.jpg", highlights: [] },
-  { slug: "asana", title: "Asana", category: "Executive Room | Valley/Mountain View", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/asana.jpg", highlights: [] },
-  { slug: "pranayama", title: "Pranayama", category: "Executive Room | Valley/Mountain View", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/pranayama.jpg", highlights: [] },
-  { slug: "pratyahara", title: "Pratyahara", category: "Executive Room | Valley/Mountain View", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/pratyahara.jpg", highlights: [] },
-  { slug: "dharna", title: "Dharna", category: "Executive Room | Valley/Mountain View", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/dharna.jpg", highlights: [] },
-  { slug: "dhyana", title: "Dhyana", category: "Executive Room | Valley/Mountain View", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/dhyana.jpg", highlights: [] },
-  { slug: "samadhi", title: "Samadhi", category: "Executive Room | Valley/Mountain View", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/samadhi.jpg", highlights: [] },
+  { slug: "yama", title: "Yama", category: "Executive Room | Valley/Mountain View", block: "ASHTANGA_YOGA", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/yama.jpg", highlights: [] },
+  { slug: "niyama", title: "Niyama", category: "Executive Room | Valley/Mountain View", block: "ASHTANGA_YOGA", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/niyama.jpg", highlights: [] },
+  { slug: "asana", title: "Asana", category: "Executive Room | Valley/Mountain View", block: "ASHTANGA_YOGA", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/asana.jpg", highlights: [] },
+  { slug: "pranayama", title: "Pranayama", category: "Executive Room | Valley/Mountain View", block: "ASHTANGA_YOGA", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/pranayama.jpg", highlights: [] },
+  { slug: "pratyahara", title: "Pratyahara", category: "Executive Room | Valley/Mountain View", block: "ASHTANGA_YOGA", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/pratyahara.jpg", highlights: [] },
+  { slug: "dharna", title: "Dharna", category: "Executive Room | Valley/Mountain View", block: "ASHTANGA_YOGA", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/dharna.jpg", highlights: [] },
+  { slug: "dhyana", title: "Dhyana", category: "Executive Room | Valley/Mountain View", block: "ASHTANGA_YOGA", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/dhyana.jpg", highlights: [] },
+  { slug: "samadhi", title: "Samadhi", category: "Executive Room | Valley/Mountain View", block: "ASHTANGA_YOGA", description: "Ashtanga Yoga Block - Executive Room with Valley/Mountain View.", capacity: 3, size: 400, pricePerNight: 12000, image: "/images/rooms/samadhi.jpg", highlights: [] },
 
   // VEDIC BLOCK
-  { slug: "rigveda", title: "Rigveda", category: "Executive Room | Garden View", description: "Vedic Block - Twin Sharing (2 Single Beds).", capacity: 2, size: 400, pricePerNight: 12000, image: "/images/rooms/rigveda.jpg", highlights: [] },
-  { slug: "yajurveda", title: "Yajurveda", category: "Executive Room | Garden View", description: "Vedic Block - Twin Sharing (2 Single Beds).", capacity: 2, size: 400, pricePerNight: 12000, image: "/images/rooms/yajurveda.jpg", highlights: [] },
-  { slug: "samaveda", title: "Samaveda", category: "Executive Room | Garden View", description: "Vedic Block - Double Bed with provision for one extra bed.", capacity: 3, size: 450, pricePerNight: 12000, image: "/images/rooms/samaveda.jpg", highlights: [] },
-  { slug: "atharvaveda", title: "Atharvaveda", category: "Executive Room | Garden View", description: "Vedic Block - Double Bed with provision for one extra bed.", capacity: 3, size: 450, pricePerNight: 12000, image: "/images/rooms/atharvaveda.jpg", highlights: [] },
+  { slug: "rigveda", title: "Rigveda", category: "Executive Room | Garden View", block: "VEDIC", description: "Vedic Block - Twin Sharing (2 Single Beds).", capacity: 2, size: 400, pricePerNight: 12000, image: "/images/rooms/rigveda.jpg", highlights: [] },
+  { slug: "yajurveda", title: "Yajurveda", category: "Executive Room | Garden View", block: "VEDIC", description: "Vedic Block - Twin Sharing (2 Single Beds).", capacity: 2, size: 400, pricePerNight: 12000, image: "/images/rooms/yajurveda.jpg", highlights: [] },
+  { slug: "samaveda", title: "Samaveda", category: "Executive Room | Garden View", block: "VEDIC", description: "Vedic Block - Double Bed with provision for one extra bed.", capacity: 3, size: 450, pricePerNight: 12000, image: "/images/rooms/samaveda.jpg", highlights: [] },
+  { slug: "atharvaveda", title: "Atharvaveda", category: "Executive Room | Garden View", block: "VEDIC", description: "Vedic Block - Double Bed with provision for one extra bed.", capacity: 3, size: 450, pricePerNight: 12000, image: "/images/rooms/atharvaveda.jpg", highlights: [] },
 
   // TRIVENI BLOCK
-  { slug: "ganga", title: "Ganga", category: "Family Room", description: "Triveni Block - 4 Single Beds.", capacity: 4, size: 850, pricePerNight: 18000, image: "/images/rooms/ganga.jpg", highlights: [] },
-  { slug: "yamuna", title: "Yamuna", category: "Executive Plus Room | Valley/Mountain View", description: "Triveni Block - Twin Sharing (2 Single Beds).", capacity: 2, size: 550, pricePerNight: 13000, image: "/images/rooms/yamuna.jpg", highlights: [] },
-  { slug: "saraswati", title: "Saraswati", category: "Executive Plus Room | Valley/Mountain View", description: "Triveni Block - Twin Sharing (2 Single Beds).", capacity: 2, size: 550, pricePerNight: 13000, image: "/images/rooms/saraswati.jpg", highlights: [] },
+  { slug: "ganga", title: "Ganga", category: "Family Room", block: "TRIVENI", description: "Triveni Block - 4 Single Beds.", capacity: 4, size: 850, pricePerNight: 18000, image: "/images/rooms/ganga.jpg", highlights: [] },
+  { slug: "yamuna", title: "Yamuna", category: "Executive Plus Room | Valley/Mountain View", block: "TRIVENI", description: "Triveni Block - Twin Sharing (2 Single Beds).", capacity: 2, size: 550, pricePerNight: 13000, image: "/images/rooms/yamuna.jpg", highlights: [] },
+  { slug: "saraswati", title: "Saraswati", category: "Executive Plus Room | Valley/Mountain View", block: "TRIVENI", description: "Triveni Block - Twin Sharing (2 Single Beds).", capacity: 2, size: 550, pricePerNight: 13000, image: "/images/rooms/saraswati.jpg", highlights: [] },
 
-  // COTTAGES
-  { slug: "kedarnath", title: "Kedarnath", category: "Cottage with Garden View", description: "Cottage with attic. One Double Bed with one mattress in attic.", capacity: 3, size: 600, pricePerNight: 14000, image: "/images/rooms/kedarnath.jpg", highlights: [] },
-  { slug: "badrinath", title: "Badrinath", category: "Cottage with Garden View", description: "Cottage with attic. One Double Bed with one mattress in attic.", capacity: 3, size: 600, pricePerNight: 14000, image: "/images/rooms/badrinath.jpg", highlights: [] },
+  // COTTAGE WITH ATTIC
+  { slug: "kedarnath", title: "Kedarnath", category: "Cottage with Garden View", block: "COTTAGE_WITH_ATTIC", description: "Cottage with attic. One Double Bed with one mattress in attic.", capacity: 3, size: 600, pricePerNight: 14000, image: "/images/rooms/kedarnath.jpg", highlights: [] },
+  { slug: "badrinath", title: "Badrinath", category: "Cottage with Garden View", block: "COTTAGE_WITH_ATTIC", description: "Cottage with attic. One Double Bed with one mattress in attic.", capacity: 3, size: 600, pricePerNight: 14000, image: "/images/rooms/badrinath.jpg", highlights: [] },
 ];
 
 async function seedRooms() {

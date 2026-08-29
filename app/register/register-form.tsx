@@ -40,14 +40,8 @@ export default function RegisterForm() {
     }
   }
 
-  if (authLoading) {
-    return (
-      <main className="pt-28 pb-12">
-        <div className="mx-auto max-w-md px-6 text-sm text-text-muted">Loading…</div>
-      </main>
-    )
-  }
-
+  // Form always renders; session restore happens in the background and an
+  // already-authenticated visitor is redirected once it settles.
   return (
     <main className="pt-28 pb-12">
       <div className="mx-auto max-w-md px-6">

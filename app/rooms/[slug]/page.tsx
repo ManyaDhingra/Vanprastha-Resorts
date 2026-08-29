@@ -5,18 +5,25 @@ import { DetailGallery } from '@/components/rooms/detail-gallery'
 import { RoomSpecs } from '@/components/rooms/room-specs'
 import { BookingSidebar } from '@/components/rooms/booking-sidebar'
 import { RelatedRooms } from '@/components/rooms/related-rooms'
+import { BlockRoomsClient } from '@/components/rooms/block-rooms-client'
+import { getBlockBySlug } from '@/lib/shared/blocks'
 import { gallery } from '@/data/gallery'
 import { formatINR } from '@/lib/utils'
 
 type RoomPageProps = { params: Promise<{ slug: string }> }
 
-async function getRoom(slug: string) {
-  return prisma.room.findFirst({ where: { slug, isActive: true } });
-}
-
 export async function generateMetadata({ params }: RoomPageProps): Promise<Metadata> {
   const { slug } = await params
-  const room = await getRoom(slug)
+
+  const block = getBlockBySlug(slug)
+  if (block) {
+    return {
+      title: `${block.name} — Vanprastha Resorts`,
+      description: block.description,
+    }
+  }
+
+  const room = await prisma.room.findFirst({ where: { slug, isActive: true } })
   return {
     title: room ? `${room.title} — Vanprastha Resorts` : 'Room — Vanprastha Resorts',
     description: room?.description ?? undefined,
@@ -25,7 +32,17 @@ export async function generateMetadata({ params }: RoomPageProps): Promise<Metad
 
 export default async function RoomPage({ params }: RoomPageProps) {
   const { slug } = await params
-  const room = await getRoom(slug)
+
+  const block = getBlockBySlug(slug)
+  if (block) {
+    const rooms = await prisma.room.findMany({
+      where: { isActive: true, block: block.id },
+      orderBy: { pricePerNight: 'asc' },
+    })
+    return <BlockRoomsClient rooms={rooms} block={block} />
+  }
+
+  const room = await prisma.room.findFirst({ where: { slug, isActive: true } })
   if (!room) notFound()
 
   const images = [room.image, ...gallery.map((g) => g.image)].slice(0, 6)

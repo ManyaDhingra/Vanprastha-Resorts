@@ -1,7 +1,10 @@
 import type { Metadata } from 'next'
 import * as React from 'react'
-import { useAuth } from '@/components/auth/auth-provider'
 import LoginForm from './login-form'
+
+// Dynamic so useSearchParams renders on the server: the form ships in the
+// HTML response instead of appearing only after client hydration.
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Login — Vanprastha Resorts',

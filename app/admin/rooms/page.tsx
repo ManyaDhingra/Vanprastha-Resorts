@@ -2,8 +2,9 @@
 
 import * as React from 'react'
 import Image from 'next/image'
-import { apiFetch } from '@/lib/utils'
-import { formatINR } from '@/lib/utils'
+import { apiFetch, formatINR } from '@/lib/utils'
+import { BLOCKS, getBlockById } from '@/lib/shared/blocks'
+import { BedDouble, CheckCircle2, XCircle } from 'lucide-react'
 
 interface AdminRoom {
   id: string
@@ -17,6 +18,7 @@ interface AdminRoom {
   image: string
   highlights: string[]
   isActive: boolean
+  block: string | null
   _count: { bookings: number }
 }
 
@@ -260,133 +262,183 @@ export default function AdminRooms() {
       ) : rooms.length === 0 ? (
         <p className="text-sm text-text-muted">No rooms yet.</p>
       ) : (
-        <div className="grid gap-4">
-          {rooms.map((room) => (
-            <div
-              key={room.id}
-              className="rounded-xl border border-border/60 bg-surface p-4 shadow-card"
-            >
-              {editingId === room.id && editingForm ? (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <h2 className="sm:col-span-2 text-sm font-semibold text-text">
-                    Edit — {room.title}
+        <>
+          {/* Block Summary */}
+          <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {BLOCKS.map((block) => {
+              const blockRooms = rooms.filter((r) => r.block === block.id)
+              const activeCount = blockRooms.filter((r) => r.isActive).length
+              return (
+                <div key={block.id} className="rounded-xl border border-border/60 bg-surface p-4 shadow-card">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BedDouble className="h-4 w-4 text-primary" />
+                    <h3 className="font-medium text-text">{block.name}</h3>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                      <span className="text-text-muted">{activeCount} active</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <XCircle className="h-3 w-3 text-red-500" />
+                      <span className="text-text-muted">{blockRooms.length - activeCount} inactive</span>
+                    </div>
+                  </div>
+                  <p className="mt-1 text-xs text-text-muted">{blockRooms.length} / {block.roomCount} rooms</p>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Rooms grouped by block */}
+          {(() => {
+            const grouped = new Map<string, AdminRoom[]>()
+            for (const room of rooms) {
+              const blockId = room.block ?? 'UNASSIGNED'
+              const list = grouped.get(blockId) ?? []
+              list.push(room)
+              grouped.set(blockId, list)
+            }
+
+            return Array.from(grouped.entries()).map(([blockId, blockRooms]) => {
+              const block = getBlockById(blockId)
+              return (
+                <div key={blockId} className="mb-6">
+                  <h2 className="mb-3 font-heading text-lg font-semibold text-text">
+                    {block?.name ?? 'Unassigned Rooms'}
                   </h2>
-                  {(
-                    [
-                      ['slug', 'Slug (url)'],
-                      ['title', 'Title'],
-                      ['category', 'Category'],
-                      ['pricePerNight', 'Price per night (₹)'],
-                      ['capacity', 'Capacity (guests)'],
-                      ['size', 'Size (sq ft)'],
-                      ['image', 'Image path'],
-                    ] as const
-                  ).map(([key, label]) => (
-                    <div key={key} className="grid gap-1">
-                      <label className="text-xs text-text-muted">{label}</label>
-                      <input
-                        className={fieldCls}
-                        value={editingForm[key]}
-                        onChange={(e) => set(key, e.target.value, 'edit')}
-                      />
-                    </div>
-                  ))}
-                  <div className="grid gap-1 sm:col-span-2">
-                    <label className="text-xs text-text-muted">Highlights</label>
-                    <input
-                      className={fieldCls}
-                      value={editingForm.highlights}
-                      onChange={(e) => set('highlights', e.target.value, 'edit')}
-                    />
-                  </div>
-                  <div className="grid gap-1 sm:col-span-2">
-                    <label className="text-xs text-text-muted">Description</label>
-                    <textarea
-                      className={fieldCls}
-                      rows={2}
-                      value={editingForm.description}
-                      onChange={(e) => set('description', e.target.value, 'edit')}
-                    />
-                  </div>
-                  <div className="sm:col-span-2 flex gap-2">
-                    <button
-                      type="button"
-                      disabled={busy === room.id}
-                      onClick={() => void updateRoom(room.id)}
-                      className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                    >
-                      {busy === room.id ? 'Saving…' : 'Save'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingId(null)
-                        setEditingForm(null)
-                      }}
-                      className="rounded-full border border-border px-4 py-2 text-sm text-text-muted"
-                    >
-                      Cancel
-                    </button>
+                  <div className="grid gap-4">
+                    {blockRooms.map((room) => (
+                      <div
+                        key={room.id}
+                        className="rounded-xl border border-border/60 bg-surface p-4 shadow-card"
+                      >
+                        {editingId === room.id && editingForm ? (
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <h2 className="sm:col-span-2 text-sm font-semibold text-text">
+                              Edit — {room.title}
+                            </h2>
+                            {(
+                              [
+                                ['slug', 'Slug (url)'],
+                                ['title', 'Title'],
+                                ['category', 'Category'],
+                                ['pricePerNight', 'Price per night (₹)'],
+                                ['capacity', 'Capacity (guests)'],
+                                ['size', 'Size (sq ft)'],
+                                ['image', 'Image path'],
+                              ] as const
+                            ).map(([key, label]) => (
+                              <div key={key} className="grid gap-1">
+                                <label className="text-xs text-text-muted">{label}</label>
+                                <input
+                                  className={fieldCls}
+                                  value={editingForm[key]}
+                                  onChange={(e) => set(key, e.target.value, 'edit')}
+                                />
+                              </div>
+                            ))}
+                            <div className="grid gap-1 sm:col-span-2">
+                              <label className="text-xs text-text-muted">Highlights</label>
+                              <input
+                                className={fieldCls}
+                                value={editingForm.highlights}
+                                onChange={(e) => set('highlights', e.target.value, 'edit')}
+                              />
+                            </div>
+                            <div className="grid gap-1 sm:col-span-2">
+                              <label className="text-xs text-text-muted">Description</label>
+                              <textarea
+                                className={fieldCls}
+                                rows={2}
+                                value={editingForm.description}
+                                onChange={(e) => set('description', e.target.value, 'edit')}
+                              />
+                            </div>
+                            <div className="sm:col-span-2 flex gap-2">
+                              <button
+                                type="button"
+                                disabled={busy === room.id}
+                                onClick={() => void updateRoom(room.id)}
+                                className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                              >
+                                {busy === room.id ? 'Saving…' : 'Save'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingId(null)
+                                  setEditingForm(null)
+                                }}
+                                className="rounded-full border border-border px-4 py-2 text-sm text-text-muted"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-wrap items-center gap-4">
+                            <Image
+                              src={room.image}
+                              alt={room.title}
+                              width={96}
+                              height={64}
+                              className="h-16 w-24 rounded-lg object-cover"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-medium text-text">{room.title}</span>
+                                {!room.isActive && (
+                                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-text-muted">
+                                    Inactive
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-text-muted">
+                                {room.category} · {room.capacity} guests · {room.size} sq ft ·
+                                {room._count.bookings} booking(s)
+                              </div>
+                              <div className="text-xs text-slate-400">/{room.slug}</div>
+                            </div>
+                            <div className="font-semibold text-text">
+                              {formatINR(room.pricePerNight)}
+                              <span className="text-xs font-normal text-text-muted">/night</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startEdit(room)}
+                                className="rounded-md border border-border px-3 py-1.5 text-xs text-text-muted hover:bg-secondary"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                disabled={busy === room.id}
+                                onClick={() => void toggleActive(room)}
+                                className="rounded-md border border-border px-3 py-1.5 text-xs text-text-muted hover:bg-secondary disabled:opacity-50"
+                              >
+                                {busy === room.id ? '…' : room.isActive ? 'Deactivate' : 'Activate'}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={busy === room.id || room._count.bookings > 0}
+                                onClick={() => void deleteRoom(room)}
+                                className="rounded-md border border-red-200 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ) : (
-                <div className="flex flex-wrap items-center gap-4">
-                  <Image
-                    src={room.image}
-                    alt={room.title}
-                    width={96}
-                    height={64}
-                    className="h-16 w-24 rounded-lg object-cover"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium text-text">{room.title}</span>
-                      {!room.isActive && (
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-text-muted">
-                          Inactive
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-xs text-text-muted">
-                      {room.category} · {room.capacity} guests · {room.size} sq ft ·
-                      {room._count.bookings} booking(s)
-                    </div>
-                    <div className="text-xs text-slate-400">/{room.slug}</div>
-                  </div>
-                  <div className="font-semibold text-text">
-                    {formatINR(room.pricePerNight)}
-                    <span className="text-xs font-normal text-text-muted">/night</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => startEdit(room)}
-                      className="rounded-md border border-border px-3 py-1.5 text-xs text-text-muted hover:bg-secondary"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      disabled={busy === room.id}
-                      onClick={() => void toggleActive(room)}
-                      className="rounded-md border border-border px-3 py-1.5 text-xs text-text-muted hover:bg-secondary disabled:opacity-50"
-                    >
-                      {busy === room.id ? '…' : room.isActive ? 'Deactivate' : 'Activate'}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={busy === room.id || room._count.bookings > 0}
-                      onClick={() => void deleteRoom(room)}
-                      className="rounded-md border border-red-200 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+              )
+            })
+          })()}
+        </>
       )}
     </div>
   )

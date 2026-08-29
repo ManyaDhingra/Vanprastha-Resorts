@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#F5F0E8"/>
+  <g transform="translate(400,300)">
+    <!-- Mountain silhouette -->
+    <path d="M-120,60 L-60,-20 L0,40 L60,-30 L120,60 Z" fill="#E8E0D0" opacity="0.6"/>
+    <path d="M-180,60 L-100,0 L-40,50 L20,-10 L80,50 L140,10 L180,60 Z" fill="#DDD5C5" opacity="0.4"/>
+    <!-- Sun -->
+    <circle cx="0" cy="-80" r="24" fill="#A87A3B" opacity="0.3"/>
+    <!-- Text -->
+    <text x="0" y="120" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#5C5A56" opacity="0.5">Image placeholder</text>
+  </g>
+</svg>

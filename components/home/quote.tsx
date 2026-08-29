@@ -3,7 +3,7 @@ export function QuoteSection() {
     <section className="py-16">
       <div className="mx-auto max-w-5xl px-6 text-center">
         <blockquote className="rounded-2xl bg-surface/95 p-8 text-text shadow-card">
-          <p className="font-serif text-2xl leading-relaxed">
+          <p className="font-heading text-2xl leading-relaxed">
             “Vanprastha felt like a pause: quiet architecture, warm attention and a restorative sense of space that lingered long after our stay.”
           </p>
           <footer className="mt-6 text-sm text-text-muted">— Anika Singh, Wellness Explorer</footer>

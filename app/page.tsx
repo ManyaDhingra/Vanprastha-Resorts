@@ -16,6 +16,7 @@ import { testimonials } from '@/data/testimonials'
 import { gallery as galleryItems } from '@/data/gallery'
 import { amenities } from '@/data/amenities'
 import { experiences } from '@/data/experiences'
+import type { RoomDto } from '@/lib/shared/types'
 
 export const metadata: Metadata = {
   title: 'Vanprastha Resorts | Luxury mountain resort in Uttarakhand',
@@ -25,24 +26,38 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  // Rooms come from the DB — the single source of truth for the catalog.
   const rooms = await prisma.room.findMany({
     where: { isActive: true },
     orderBy: { pricePerNight: 'asc' },
-    take: 3,
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      category: true,
+      block: true,
+      description: true,
+      capacity: true,
+      size: true,
+      pricePerNight: true,
+      image: true,
+      highlights: true,
+      isActive: true,
+    },
   })
+
+  const featuredRooms = rooms.slice(0, 3)
 
   return (
     <main>
       <Hero />
-      <div className="relative -mt-20 px-6 sm:-mt-24 lg:-mt-28">
+      <div className="relative z-10 -mt-20 px-6 sm:-mt-24 lg:-mt-28">
         <div className="mx-auto w-full max-w-[1100px]">
-          <BookingCard />
+          <BookingCard rooms={rooms as RoomDto[]} />
         </div>
       </div>
 
       <WhyChoose />
-      <FeaturedRooms rooms={rooms} />
+      <FeaturedRooms rooms={featuredRooms as RoomDto[]} />
       <AmenitiesSection amenities={amenities} />
       <ExperiencesSection experiences={experiences} />
       <QuoteBanner />
